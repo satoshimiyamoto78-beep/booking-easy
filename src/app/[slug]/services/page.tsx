@@ -1,14 +1,24 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getBusinessBySlug } from "@/lib/business";
 import { formatCategory, formatDuration, formatPrice } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 const CATEGORIES = ["BARBER", "SPA", "SALON"] as const;
 
-export default async function ServicesPage() {
+export default async function ServicesPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const business = await getBusinessBySlug(slug);
+  if (!business) notFound();
+
   const services = await prisma.service.findMany({
-    where: { active: true },
+    where: { businessId: business.id, active: true },
     orderBy: [{ category: "asc" }, { sortOrder: "asc" }],
   });
 
@@ -44,7 +54,7 @@ export default async function ServicesPage() {
                   <div className="flex shrink-0 flex-col items-end gap-2">
                     <span className="font-semibold">{formatPrice(service.priceCents)}</span>
                     <Link
-                      href={`/book?service=${service.id}`}
+                      href={`/${slug}/book?service=${service.id}`}
                       className="text-sm font-medium text-amber-600 hover:underline dark:text-amber-400"
                     >
                       Book

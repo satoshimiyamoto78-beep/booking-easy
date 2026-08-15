@@ -29,10 +29,12 @@ function todayIso() {
 }
 
 export function BookingWizard({
+  businessSlug,
   services,
   staff,
   initialServiceId,
 }: {
+  businessSlug: string;
   services: ServiceOption[];
   staff: StaffOption[];
   initialServiceId?: string;
@@ -68,7 +70,9 @@ export function BookingWizard({
     let cancelled = false;
     const key = `${serviceId}|${staffId}|${date}`;
 
-    fetch(`/api/availability?serviceId=${serviceId}&staffId=${staffId}&date=${date}`)
+    fetch(
+      `/api/availability?slug=${businessSlug}&serviceId=${serviceId}&staffId=${staffId}&date=${date}`,
+    )
       .then((res) => res.json())
       .then((data: { slots: Slot[] }) => {
         if (!cancelled) setSlotsResult({ key, slots: data.slots ?? [] });
@@ -77,7 +81,7 @@ export function BookingWizard({
     return () => {
       cancelled = true;
     };
-  }, [step, serviceId, staffId, date]);
+  }, [step, serviceId, staffId, date, businessSlug]);
 
   const [state, formAction, pending] = useActionState(createBooking, undefined);
 
@@ -293,6 +297,7 @@ export function BookingWizard({
 
       {step === 4 && selectedService && selectedStaff && selectedSlot && (
         <form action={formAction} className="space-y-6">
+          <input type="hidden" name="businessSlug" value={businessSlug} />
           <input type="hidden" name="serviceId" value={selectedService.id} />
           <input type="hidden" name="staffId" value={selectedStaff.id} />
           <input type="hidden" name="startsAt" value={selectedSlot.startsAt} />

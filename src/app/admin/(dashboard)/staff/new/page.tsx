@@ -4,9 +4,9 @@ import { createStaff } from "@/lib/actions/admin";
 import { StaffForm } from "@/components/admin/staff-form";
 
 export default async function NewStaffPage() {
-  await verifySession();
+  const { businessId } = await verifySession();
   const services = await prisma.service.findMany({
-    where: { active: true },
+    where: { businessId, active: true },
     orderBy: { name: "asc" },
     select: { id: true, name: true },
   });

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/format";
 
 export default async function AdminOverviewPage() {
-  await verifySession();
+  const { businessId } = await verifySession();
 
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -12,16 +12,20 @@ export default async function AdminOverviewPage() {
 
   const [todayCount, upcoming, serviceCount, staffCount] = await Promise.all([
     prisma.appointment.count({
-      where: { startsAt: { gte: startOfToday, lt: endOfToday }, status: { not: "CANCELLED" } },
+      where: {
+        businessId,
+        startsAt: { gte: startOfToday, lt: endOfToday },
+        status: { not: "CANCELLED" },
+      },
     }),
     prisma.appointment.findMany({
-      where: { startsAt: { gte: now }, status: { not: "CANCELLED" } },
+      where: { businessId, startsAt: { gte: now }, status: { not: "CANCELLED" } },
       orderBy: { startsAt: "asc" },
       take: 8,
       include: { service: true, staff: true, customer: true },
     }),
-    prisma.service.count({ where: { active: true } }),
-    prisma.staff.count({ where: { active: true } }),
+    prisma.service.count({ where: { businessId, active: true } }),
+    prisma.staff.count({ where: { businessId, active: true } }),
   ]);
 
   return (

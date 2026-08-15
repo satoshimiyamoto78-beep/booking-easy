@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getBusinessBySlug } from "@/lib/business";
 import { formatPrice } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -8,12 +9,14 @@ export const dynamic = "force-dynamic";
 export default async function BookingConfirmedPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string; id: string }>;
 }) {
-  const { id } = await params;
+  const { slug, id } = await params;
+  const business = await getBusinessBySlug(slug);
+  if (!business) notFound();
 
   const appointment = await prisma.appointment.findUnique({
-    where: { id },
+    where: { id, businessId: business.id },
     include: { service: true, staff: true, customer: true },
   });
 
@@ -57,7 +60,7 @@ export default async function BookingConfirmedPage({
       </div>
 
       <Link
-        href="/"
+        href={`/${slug}`}
         className="mt-8 inline-block rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-neutral-900"
       >
         Back to home

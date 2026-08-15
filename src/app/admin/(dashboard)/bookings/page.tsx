@@ -14,9 +14,10 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default async function AdminBookingsPage() {
-  await verifySession();
+  const { businessId } = await verifySession();
 
   const appointments = await prisma.appointment.findMany({
+    where: { businessId },
     orderBy: { startsAt: "desc" },
     take: 100,
     include: { service: true, staff: true, customer: true },

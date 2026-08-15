@@ -32,7 +32,10 @@ export async function login(
 
   const { email, password } = parsed.data;
 
-  const admin = await prisma.adminUser.findUnique({ where: { email } });
+  const admin = await prisma.adminUser.findUnique({
+    where: { email },
+    include: { business: true },
+  });
   if (!admin) {
     return { error: "Invalid email or password." };
   }
@@ -42,7 +45,12 @@ export async function login(
     return { error: "Invalid email or password." };
   }
 
-  await createSession({ adminId: admin.id, email: admin.email });
+  await createSession({
+    adminId: admin.id,
+    email: admin.email,
+    businessId: admin.businessId,
+    businessSlug: admin.business.slug,
+  });
   redirect("/admin");
 }
 

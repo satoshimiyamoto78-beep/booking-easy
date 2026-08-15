@@ -39,9 +39,8 @@ enum SubscriptionStatus {
   CANCELED
 }
 
-// One tenant on the platform. Absorbs the old singleton BusinessSettings
-// once every row below has been backfilled with a businessId (see the
-// migration_1 backfill SQL) — BusinessSettings is dropped in migration 2.
+// One tenant on the platform. Absorbed the old singleton BusinessSettings,
+// which was dropped once every row below was backfilled with a businessId.
 model Business {
   id        String   @id @default(cuid())
   slug      String   @unique
@@ -70,23 +69,10 @@ model Business {
   appointments Appointment[]
 }
 
-model BusinessSettings {
-  id          String  @id @default("default")
-  shopName    String  @default("The Studio")
-  tagline     String? @default("Barbershop · Spa · Salon")
-  address     String?
-  phone       String?
-  email       String?
-  instagram   String?
-  updatedAt   DateTime @updatedAt
-}
-
 model Service {
   id              String            @id @default(cuid())
-  // Nullable for now — migration 1 backfills every existing row, migration 2
-  // makes this required once the backfill has run in production.
-  businessId      String?
-  business        Business?         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId      String
+  business        Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
   name            String
   description     String?
   category        ServiceCategory
@@ -104,8 +90,8 @@ model Service {
 
 model Staff {
   id           String          @id @default(cuid())
-  businessId   String?
-  business     Business?       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId   String
+  business     Business        @relation(fields: [businessId], references: [id], onDelete: Cascade)
   name         String
   title        String?
   bio          String?
@@ -156,24 +142,25 @@ model TimeOff {
 
 model Customer {
   id           String        @id @default(cuid())
-  businessId   String?
-  business     Business?     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId   String
+  business     Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
   name         String
-  // Globally unique for now (migration 1). Migration 2 swaps this to
-  // @@unique([businessId, email]) once businessId is required everywhere,
-  // so the same person can be a customer at two different businesses.
-  email        String        @unique
+  // Unique per business, not globally — the same person can be a customer
+  // at two different businesses as two separate rows.
+  email        String
   phone        String?
   notes        String?
   appointments Appointment[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+
+  @@unique([businessId, email])
 }
 
 model Appointment {
   id         String            @id @default(cuid())
-  businessId String?
-  business   Business?         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
   serviceId  String
   service    Service           @relation(fields: [serviceId], references: [id])
   staffId    String
@@ -193,8 +180,8 @@ model Appointment {
 
 model AdminUser {
   id           String    @id @default(cuid())
-  businessId   String?
-  business     Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId   String
+  business     Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
   // Globally unique — the single global /admin/login form resolves
   // email -> admin -> business with no slug in the URL to disambiguate.
   email        String    @unique

@@ -9,16 +9,16 @@ export default async function EditStaffPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await verifySession();
+  const { businessId } = await verifySession();
   const { id } = await params;
 
   const [staff, services] = await Promise.all([
     prisma.staff.findUnique({
-      where: { id },
+      where: { id, businessId },
       include: { services: true, schedules: true },
     }),
     prisma.service.findMany({
-      where: { active: true },
+      where: { businessId, active: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),

@@ -9,10 +9,10 @@ export default async function EditServicePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await verifySession();
+  const { businessId } = await verifySession();
   const { id } = await params;
 
-  const service = await prisma.service.findUnique({ where: { id } });
+  const service = await prisma.service.findUnique({ where: { id, businessId } });
   if (!service) notFound();
 
   return (

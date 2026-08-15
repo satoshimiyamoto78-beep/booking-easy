@@ -20,7 +20,7 @@ const ServiceSchema = z.object({
 });
 
 export async function createService(formData: FormData) {
-  await verifySession();
+  const { businessId } = await verifySession();
 
   const parsed = ServiceSchema.parse({
     name: formData.get("name"),
@@ -31,13 +31,13 @@ export async function createService(formData: FormData) {
     active: formData.get("active") === "on",
   });
 
-  await prisma.service.create({ data: parsed });
+  await prisma.service.create({ data: { ...parsed, businessId } });
   revalidatePath("/admin/services");
   redirect("/admin/services");
 }
 
 export async function updateService(formData: FormData) {
-  await verifySession();
+  const { businessId } = await verifySession();
 
   const id = formData.get("id") as string;
   const parsed = ServiceSchema.parse({
@@ -49,15 +49,15 @@ export async function updateService(formData: FormData) {
     active: formData.get("active") === "on",
   });
 
-  await prisma.service.update({ where: { id }, data: parsed });
+  await prisma.service.update({ where: { id, businessId }, data: parsed });
   revalidatePath("/admin/services");
   redirect("/admin/services");
 }
 
 export async function deleteService(formData: FormData) {
-  await verifySession();
+  const { businessId } = await verifySession();
   const id = formData.get("id") as string;
-  await prisma.service.delete({ where: { id } });
+  await prisma.service.delete({ where: { id, businessId } });
   revalidatePath("/admin/services");
 }
 
@@ -91,7 +91,7 @@ function parseSchedule(formData: FormData) {
 }
 
 export async function createStaff(formData: FormData) {
-  await verifySession();
+  const { businessId } = await verifySession();
 
   const parsed = StaffSchema.parse({
     name: formData.get("name"),
@@ -102,7 +102,7 @@ export async function createStaff(formData: FormData) {
   const serviceIds = parseServiceIds(formData);
   const schedule = parseSchedule(formData);
 
-  const staff = await prisma.staff.create({ data: parsed });
+  const staff = await prisma.staff.create({ data: { ...parsed, businessId } });
 
   await prisma.$transaction([
     prisma.staffService.createMany({
@@ -118,7 +118,7 @@ export async function createStaff(formData: FormData) {
 }
 
 export async function updateStaff(formData: FormData) {
-  await verifySession();
+  const { businessId } = await verifySession();
 
   const id = formData.get("id") as string;
   const parsed = StaffSchema.parse({
@@ -130,8 +130,11 @@ export async function updateStaff(formData: FormData) {
   const serviceIds = parseServiceIds(formData);
   const schedule = parseSchedule(formData);
 
+  // staff.update fails fast (P2025) if id/businessId don't match, and the
+  // whole array-form $transaction rolls back atomically, so the join-table
+  // writes below never need their own businessId check.
   await prisma.$transaction([
-    prisma.staff.update({ where: { id }, data: parsed }),
+    prisma.staff.update({ where: { id, businessId }, data: parsed }),
     prisma.staffService.deleteMany({ where: { staffId: id } }),
     prisma.staffService.createMany({
       data: serviceIds.map((serviceId) => ({ staffId: id, serviceId })),
@@ -147,16 +150,16 @@ export async function updateStaff(formData: FormData) {
 }
 
 export async function deleteStaff(formData: FormData) {
-  await verifySession();
+  const { businessId } = await verifySession();
   const id = formData.get("id") as string;
-  await prisma.staff.delete({ where: { id } });
+  await prisma.staff.delete({ where: { id, businessId } });
   revalidatePath("/admin/staff");
 }
 
 // ---------- Appointments ----------
 
 export async function updateAppointmentStatus(formData: FormData) {
-  await verifySession();
+  const { businessId } = await verifySession();
   const id = formData.get("appointmentId") as string;
   const status = formData.get("status") as string;
 
@@ -165,7 +168,7 @@ export async function updateAppointmentStatus(formData: FormData) {
   }
 
   await prisma.appointment.update({
-    where: { id },
+    where: { id, businessId },
     data: { status: status as AppointmentStatus },
   });
   revalidatePath("/admin/bookings");

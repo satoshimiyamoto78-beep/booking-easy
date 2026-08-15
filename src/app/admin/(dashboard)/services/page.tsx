@@ -5,9 +5,10 @@ import { formatCategory, formatDuration, formatPrice } from "@/lib/format";
 import { deleteService } from "@/lib/actions/admin";
 
 export default async function AdminServicesPage() {
-  await verifySession();
+  const { businessId } = await verifySession();
 
   const services = await prisma.service.findMany({
+    where: { businessId },
     orderBy: [{ category: "asc" }, { sortOrder: "asc" }],
   });
 

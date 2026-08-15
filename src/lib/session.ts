@@ -16,6 +16,8 @@ function secretKey() {
 export type SessionPayload = {
   adminId: string;
   email: string;
+  businessId: string;
+  businessSlug: string;
 };
 
 export async function encrypt(payload: SessionPayload, expiresAt: Date) {

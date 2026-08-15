@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Studio — Barbershop, Spa & Salon",
-  description: "Book haircuts, spa treatments, and salon services online.",
+  title: "Booking Easy",
+  description: "Booking software for barbershops, spas, and salons.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

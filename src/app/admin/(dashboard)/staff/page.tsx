@@ -4,9 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { deleteStaff } from "@/lib/actions/admin";
 
 export default async function AdminStaffPage() {
-  await verifySession();
+  const { businessId } = await verifySession();
 
   const staff = await prisma.staff.findMany({
+    where: { businessId },
     orderBy: { name: "asc" },
     include: { services: { include: { service: true } } },
   });

@@ -4,8 +4,10 @@ import * as z from "zod";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isSlotAvailable } from "@/lib/availability";
+import { getBusinessBySlug } from "@/lib/business";
 
 const BookingSchema = z.object({
+  businessSlug: z.string().min(1),
   serviceId: z.string().min(1),
   staffId: z.string().min(1),
   startsAt: z.iso.datetime({ error: "Pick a valid time slot." }),
@@ -26,6 +28,7 @@ export async function createBooking(
   formData: FormData,
 ): Promise<BookingState> {
   const parsed = BookingSchema.safeParse({
+    businessSlug: formData.get("businessSlug"),
     serviceId: formData.get("serviceId"),
     staffId: formData.get("staffId"),
     startsAt: formData.get("startsAt"),
@@ -39,12 +42,18 @@ export async function createBooking(
     return { error: parsed.error.issues[0]?.message ?? "Please check the form and try again." };
   }
 
-  const { serviceId, staffId, startsAt, name, email, phone, notes } = parsed.data;
+  const { businessSlug, serviceId, staffId, startsAt, name, email, phone, notes } = parsed.data;
   const startDate = new Date(startsAt);
 
+  const business = await getBusinessBySlug(businessSlug);
+  if (!business) {
+    return { error: "That business or team member is no longer available." };
+  }
+  const businessId = business.id;
+
   const [service, staff] = await Promise.all([
-    prisma.service.findUnique({ where: { id: serviceId } }),
-    prisma.staff.findUnique({ where: { id: staffId } }),
+    prisma.service.findUnique({ where: { id: serviceId, businessId } }),
+    prisma.staff.findUnique({ where: { id: staffId, businessId } }),
   ]);
 
   if (!service || !service.active || !staff || !staff.active) {
@@ -61,6 +70,7 @@ export async function createBooking(
         // bookings for the same slot can't both pass the earlier check.
         const conflict = await tx.appointment.findFirst({
           where: {
+            businessId,
             staffId,
             status: { not: "CANCELLED" },
             startsAt: { lt: endsAt },
@@ -71,19 +81,20 @@ export async function createBooking(
           throw new Error("SLOT_TAKEN");
         }
 
-        const available = await isSlotAvailable({ serviceId, staffId, startsAt: startDate });
+        const available = await isSlotAvailable({ businessId, serviceId, staffId, startsAt: startDate });
         if (!available) {
           throw new Error("SLOT_TAKEN");
         }
 
         const customer = await tx.customer.upsert({
-          where: { email },
+          where: { businessId_email: { businessId, email } },
           update: { name, phone },
-          create: { name, email, phone },
+          create: { businessId, name, email, phone },
         });
 
         const appointment = await tx.appointment.create({
           data: {
+            businessId,
             serviceId,
             staffId,
             customerId: customer.id,
@@ -102,5 +113,5 @@ export async function createBooking(
     return { error: "That time was just booked. Please pick another slot." };
   }
 
-  redirect(`/book/confirmed/${appointmentId}`);
+  redirect(`/${businessSlug}/book/confirmed/${appointmentId}`);
 }

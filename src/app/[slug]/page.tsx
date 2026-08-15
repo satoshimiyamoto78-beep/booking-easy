@@ -1,19 +1,29 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getBusinessBySlug } from "@/lib/business";
 import { formatCategory, formatDuration, formatPrice } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 const CATEGORIES = ["BARBER", "SPA", "SALON"] as const;
 
-export default async function HomePage() {
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const business = await getBusinessBySlug(slug);
+  if (!business) notFound();
+
   const [services, staff] = await Promise.all([
     prisma.service.findMany({
-      where: { active: true },
+      where: { businessId: business.id, active: true },
       orderBy: [{ category: "asc" }, { sortOrder: "asc" }],
     }),
     prisma.staff.findMany({
-      where: { active: true },
+      where: { businessId: business.id, active: true },
       orderBy: { name: "asc" },
       take: 4,
     }),
@@ -24,7 +34,7 @@ export default async function HomePage() {
       <section className="border-b border-neutral-200 bg-gradient-to-b from-amber-50 to-white dark:border-neutral-800 dark:from-neutral-900 dark:to-neutral-950">
         <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
           <p className="text-sm font-medium uppercase tracking-widest text-amber-600 dark:text-amber-400">
-            Barbershop · Spa · Salon
+            {business.tagline ?? "Book online"}
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
             Look sharp. Feel renewed.
@@ -35,13 +45,13 @@ export default async function HomePage() {
           </p>
           <div className="mt-8 flex justify-center gap-3">
             <Link
-              href="/book"
+              href={`/${slug}/book`}
               className="rounded-full bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-amber-500 hover:text-neutral-950 dark:bg-white dark:text-neutral-900"
             >
               Book an appointment
             </Link>
             <Link
-              href="/services"
+              href={`/${slug}/services`}
               className="rounded-full border border-neutral-300 px-6 py-3 text-sm font-semibold transition hover:border-amber-500 hover:text-amber-600 dark:border-neutral-700 dark:hover:text-amber-400"
             >
               View services
@@ -62,7 +72,7 @@ export default async function HomePage() {
               <div className="flex items-baseline justify-between">
                 <h2 className="text-2xl font-semibold">{formatCategory(category)}</h2>
                 <Link
-                  href="/services"
+                  href={`/${slug}/services`}
                   className="text-sm font-medium text-amber-600 hover:underline dark:text-amber-400"
                 >
                   See all

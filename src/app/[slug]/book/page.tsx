@@ -1,22 +1,30 @@
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getBusinessBySlug } from "@/lib/business";
 import { BookingWizard } from "@/components/booking/booking-wizard";
 
 export const dynamic = "force-dynamic";
 
 export default async function BookPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ slug: string }>;
   searchParams: Promise<{ service?: string }>;
 }) {
+  const { slug } = await params;
   const { service: preselectedServiceId } = await searchParams;
+
+  const business = await getBusinessBySlug(slug);
+  if (!business) notFound();
 
   const [services, staff] = await Promise.all([
     prisma.service.findMany({
-      where: { active: true },
+      where: { businessId: business.id, active: true },
       orderBy: [{ category: "asc" }, { sortOrder: "asc" }],
     }),
     prisma.staff.findMany({
-      where: { active: true },
+      where: { businessId: business.id, active: true },
       orderBy: { name: "asc" },
       include: { services: { select: { serviceId: true } } },
     }),
@@ -45,6 +53,7 @@ export default async function BookPage({
       </p>
       <div className="mt-10">
         <BookingWizard
+          businessSlug={slug}
           services={serviceOptions}
           staff={staffOptions}
           initialServiceId={preselectedServiceId}

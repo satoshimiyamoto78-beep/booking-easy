@@ -19,13 +19,14 @@ export function parseDateOnly(date: string): Date {
 }
 
 export async function getAvailableSlots(params: {
+  businessId: string;
   serviceId: string;
   staffId: string;
   date: string;
 }): Promise<Slot[]> {
-  const { serviceId, staffId, date } = params;
+  const { businessId, serviceId, staffId, date } = params;
 
-  const service = await prisma.service.findUnique({ where: { id: serviceId } });
+  const service = await prisma.service.findUnique({ where: { id: serviceId, businessId } });
   if (!service || !service.active) return [];
 
   const day = startOfDay(parseDateOnly(date));
@@ -36,6 +37,7 @@ export async function getAvailableSlots(params: {
     prisma.staffSchedule.findMany({ where: { staffId, dayOfWeek } }),
     prisma.appointment.findMany({
       where: {
+        businessId,
         staffId,
         status: { not: "CANCELLED" },
         startsAt: { lt: dayEnd },
@@ -90,12 +92,13 @@ export async function getAvailableSlots(params: {
 }
 
 export async function isSlotAvailable(params: {
+  businessId: string;
   serviceId: string;
   staffId: string;
   startsAt: Date;
 }): Promise<boolean> {
-  const { serviceId, staffId, startsAt } = params;
-  const service = await prisma.service.findUnique({ where: { id: serviceId } });
+  const { businessId, serviceId, staffId, startsAt } = params;
+  const service = await prisma.service.findUnique({ where: { id: serviceId, businessId } });
   if (!service) return false;
 
   const endsAt = addMinutes(startsAt, service.durationMinutes);
@@ -115,6 +118,7 @@ export async function isSlotAvailable(params: {
 
   const conflict = await prisma.appointment.findFirst({
     where: {
+      businessId,
       staffId,
       status: { not: "CANCELLED" },
       startsAt: { lt: endsAt },

@@ -11,19 +11,22 @@ const WEEKDAYS = [1, 2, 3, 4, 5]; // Mon-Fri
 const SATURDAY = [6];
 
 async function main() {
-  await prisma.businessSettings.upsert({
-    where: { id: "default" },
+  const business = await prisma.business.upsert({
+    where: { slug: "the-studio" },
     update: {},
     create: {
-      id: "default",
-      shopName: "The Studio",
+      slug: "the-studio",
+      name: "The Studio",
       tagline: "Barbershop · Spa · Salon",
       address: "123 Main Street, Springfield",
       phone: "(555) 010-1234",
       email: "hello@thestudio.example",
       instagram: "@thestudio",
+      subscriptionTier: "BUSINESS",
+      subscriptionStatus: "ACTIVE",
     },
   });
+  const businessId = business.id;
 
   const services = await Promise.all(
     [
@@ -101,7 +104,7 @@ async function main() {
       },
     ].map((data) =>
       prisma.service.create({
-        data,
+        data: { ...data, businessId },
       }),
     ),
   );
@@ -162,6 +165,7 @@ async function main() {
   for (const s of staffData) {
     const staff = await prisma.staff.create({
       data: {
+        businessId,
         name: s.name,
         title: s.title,
         bio: s.bio,
@@ -194,6 +198,7 @@ async function main() {
     where: { email: adminEmail },
     update: { passwordHash },
     create: {
+      businessId,
       email: adminEmail,
       passwordHash,
       name: "Shop Owner",
