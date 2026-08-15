@@ -13,14 +13,17 @@ export default async function proxy(req: NextRequest) {
   const isPublicAdminRoute = PUBLIC_ADMIN_ROUTES.includes(pathname);
   const token = req.cookies.get("session")?.value;
   const session = await decrypt(token);
+  // Sessions issued before businessId/businessSlug existed in the JWT
+  // payload are treated as invalid, not as authenticated-but-unscoped.
+  const isValidSession = Boolean(session?.adminId && session.businessId && session.businessSlug);
 
-  if (!isPublicAdminRoute && !session?.adminId) {
+  if (!isPublicAdminRoute && !isValidSession) {
     const loginUrl = new URL("/admin/login", req.nextUrl);
     loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isPublicAdminRoute && session?.adminId) {
+  if (isPublicAdminRoute && isValidSession) {
     return NextResponse.redirect(new URL("/admin", req.nextUrl));
   }
 
