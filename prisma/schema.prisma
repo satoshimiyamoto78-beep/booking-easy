@@ -1,0 +1,138 @@
+// Prisma schema for the barbershop / spa / salon booking platform.
+// Get a free hosted Postgres database in seconds: `npx create-db`
+// Or point DATABASE_URL at a Vercel Postgres (Neon) instance.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ServiceCategory {
+  BARBER
+  SPA
+  SALON
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+model BusinessSettings {
+  id          String  @id @default("default")
+  shopName    String  @default("The Studio")
+  tagline     String? @default("Barbershop · Spa · Salon")
+  address     String?
+  phone       String?
+  email       String?
+  instagram   String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Service {
+  id              String            @id @default(cuid())
+  name            String
+  description     String?
+  category        ServiceCategory
+  durationMinutes Int
+  priceCents      Int
+  active          Boolean           @default(true)
+  sortOrder       Int               @default(0)
+  staff           StaffService[]
+  appointments    Appointment[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model Staff {
+  id           String          @id @default(cuid())
+  name         String
+  title        String?
+  bio          String?
+  photoUrl     String?
+  active       Boolean         @default(true)
+  services     StaffService[]
+  schedules    StaffSchedule[]
+  timeOffs     TimeOff[]
+  appointments Appointment[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model StaffService {
+  staffId   String
+  serviceId String
+  staff     Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([staffId, serviceId])
+}
+
+// Recurring weekly availability window for a staff member.
+model StaffSchedule {
+  id          String @id @default(cuid())
+  staffId     String
+  staff       Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int // 0 = Sunday ... 6 = Saturday
+  startMinute Int // minutes after midnight, e.g. 540 = 9:00am
+  endMinute   Int // minutes after midnight, e.g. 1080 = 6:00pm
+
+  @@index([staffId, dayOfWeek])
+}
+
+// One-off blocks of unavailability (vacation, sick day, etc).
+model TimeOff {
+  id       String   @id @default(cuid())
+  staffId  String
+  staff    Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  startsAt DateTime
+  endsAt   DateTime
+  reason   String?
+
+  @@index([staffId, startsAt])
+}
+
+model Customer {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  phone        String?
+  notes        String?
+  appointments Appointment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Appointment {
+  id         String            @id @default(cuid())
+  serviceId  String
+  service    Service           @relation(fields: [serviceId], references: [id])
+  staffId    String
+  staff      Staff             @relation(fields: [staffId], references: [id])
+  customerId String
+  customer   Customer          @relation(fields: [customerId], references: [id])
+  startsAt   DateTime
+  endsAt     DateTime
+  status     AppointmentStatus @default(CONFIRMED)
+  notes      String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([staffId, startsAt])
+  @@index([customerId])
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+}
