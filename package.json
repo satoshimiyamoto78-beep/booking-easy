@@ -2,39 +2,21 @@
   "name": "booking-easy",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@11.16.0",
   "workspaces": [
+    "apps/*",
     "packages/*"
   ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
     "db:migrate": "npm run db:migrate -w packages/db",
     "db:deploy": "npm run db:deploy -w packages/db",
     "db:seed": "npm run db:seed -w packages/db",
     "db:studio": "npm run db:studio -w packages/db"
   },
-  "dependencies": {
-    "@booking-easy/db": "*",
-    "bcryptjs": "^3.0.3",
-    "date-fns": "^4.4.0",
-    "jose": "^6.2.8",
-    "next": "16.3.1",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "server-only": "^0.0.1",
-    "zod": "^4.4.3"
-  },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.1",
-    "tailwindcss": "^4",
     "turbo": "^2",
     "typescript": "^5"
   }

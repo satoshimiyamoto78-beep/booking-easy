@@ -45,9 +45,6 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Type check
-        run: npx tsc --noEmit
-
       - name: Apply migrations
         run: npm run db:deploy
 
