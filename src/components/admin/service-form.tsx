@@ -1,4 +1,4 @@
-import { ServiceCategory } from "@/generated/prisma/client";
+import { ServiceCategory } from "@booking-easy/db";
 
 type ServiceFormValues = {
   id?: string;

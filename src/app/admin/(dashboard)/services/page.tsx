@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@booking-easy/db";
 import { formatCategory, formatDuration, formatPrice } from "@/lib/format";
 import { deleteService } from "@/lib/actions/admin";
 

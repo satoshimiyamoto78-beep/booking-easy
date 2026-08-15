@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@booking-easy/db";
 import { getBusinessBySlug } from "@/lib/business";
 import { BookingWizard } from "@/components/booking/booking-wizard";
 

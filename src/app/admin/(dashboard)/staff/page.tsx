@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@booking-easy/db";
 import { deleteStaff } from "@/lib/actions/admin";
 
 export default async function AdminStaffPage() {

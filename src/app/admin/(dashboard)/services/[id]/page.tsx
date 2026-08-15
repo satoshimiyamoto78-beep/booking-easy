@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@booking-easy/db";
 import { updateService } from "@/lib/actions/admin";
 import { ServiceForm } from "@/components/admin/service-form";
 

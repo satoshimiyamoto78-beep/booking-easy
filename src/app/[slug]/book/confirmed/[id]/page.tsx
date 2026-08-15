@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@booking-easy/db";
 import { getBusinessBySlug } from "@/lib/business";
 import { formatPrice } from "@/lib/format";
 

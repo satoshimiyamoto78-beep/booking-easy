@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@booking-easy/db";
 import { isSlotAvailable } from "@/lib/availability";
 import { getBusinessBySlug } from "@/lib/business";
 

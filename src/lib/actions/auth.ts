@@ -3,7 +3,7 @@
 import * as z from "zod";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@booking-easy/db";
 import { createSession, deleteSession } from "@/lib/session";
 
 const LoginSchema = z.object({

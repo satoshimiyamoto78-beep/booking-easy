@@ -1,11 +1,6 @@
 import "dotenv/config";
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, ServiceCategory } from "../src/generated/prisma/client";
+import { prisma, ServiceCategory } from "../src/index";
 import bcrypt from "bcryptjs";
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 const WEEKDAYS = [1, 2, 3, 4, 5]; // Mon-Fri
 const SATURDAY = [6];
@@ -215,5 +210,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-    await pool.end();
   });

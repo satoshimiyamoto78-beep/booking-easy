@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@booking-easy/db";
 import { formatPrice } from "@/lib/format";
 
 export default async function AdminOverviewPage() {

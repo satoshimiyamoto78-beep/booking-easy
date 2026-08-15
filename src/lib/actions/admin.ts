@@ -3,10 +3,9 @@
 import * as z from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma, AppointmentStatus, ServiceCategory } from "@booking-easy/db";
 import { verifySession } from "@/lib/dal";
 import { timeToMinutes } from "@/lib/schedule";
-import { AppointmentStatus, ServiceCategory } from "@/generated/prisma/client";
 
 // ---------- Services ----------
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Business } from "@/generated/prisma/client";
+import type { Business } from "@booking-easy/db";
 
 export function SiteHeader({ business }: { business: Business }) {
   return (

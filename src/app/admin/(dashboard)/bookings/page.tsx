@@ -1,7 +1,6 @@
 import { verifySession } from "@/lib/dal";
-import { prisma } from "@/lib/prisma";
+import { prisma, AppointmentStatus } from "@booking-easy/db";
 import { updateAppointmentStatus } from "@/lib/actions/admin";
-import { AppointmentStatus } from "@/generated/prisma/client";
 
 const STATUS_OPTIONS = Object.values(AppointmentStatus);
 

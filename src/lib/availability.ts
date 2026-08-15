@@ -1,6 +1,6 @@
 import "server-only";
 import { addMinutes, areIntervalsOverlapping, endOfDay, startOfDay } from "date-fns";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@booking-easy/db";
 
 const SLOT_INTERVAL_MINUTES = 15;
 

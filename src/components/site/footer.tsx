@@ -1,4 +1,4 @@
-import type { Business } from "@/generated/prisma/client";
+import type { Business } from "@booking-easy/db";
 
 export function SiteFooter({ business }: { business: Business }) {
   const year = new Date().getFullYear();
