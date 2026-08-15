@@ -58,6 +58,9 @@ model Business {
   subscriptionStatus   SubscriptionStatus @default(INCOMPLETE)
   currentPeriodEnd     DateTime?
   trialEndsAt          DateTime?
+  // Platform-admin override, independent of subscriptionStatus (billing
+  // truth) — for policy/abuse suspension regardless of payment state.
+  suspended            Boolean            @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -80,6 +83,7 @@ model Service {
   priceCents      Int
   active          Boolean           @default(true)
   sortOrder       Int               @default(0)
+  imageUrl        String?
   staff           StaffService[]
   appointments    Appointment[]
   createdAt       DateTime          @default(now())
@@ -188,4 +192,16 @@ model AdminUser {
   passwordHash String
   name         String?
   createdAt    DateTime  @default(now())
+}
+
+// The founder's own login, not tenant-scoped — deliberately a separate
+// model from AdminUser rather than a nullable-businessId reuse of it, so
+// the two trust domains (shop owners vs. platform operator) can never be
+// conflated in one query surface.
+model PlatformAdmin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
