@@ -25,6 +25,51 @@ enum AppointmentStatus {
   NO_SHOW
 }
 
+enum SubscriptionTier {
+  STARTER
+  PRO
+  BUSINESS
+}
+
+enum SubscriptionStatus {
+  INCOMPLETE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+// One tenant on the platform. Absorbs the old singleton BusinessSettings
+// once every row below has been backfilled with a businessId (see the
+// migration_1 backfill SQL) — BusinessSettings is dropped in migration 2.
+model Business {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  tagline   String?
+  address   String?
+  phone     String?
+  email     String?
+  instagram String?
+
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?  @unique
+  stripePriceId        String?
+  subscriptionTier     SubscriptionTier   @default(STARTER)
+  subscriptionStatus   SubscriptionStatus @default(INCOMPLETE)
+  currentPeriodEnd     DateTime?
+  trialEndsAt          DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  admins       AdminUser[]
+  services     Service[]
+  staff        Staff[]
+  customers    Customer[]
+  appointments Appointment[]
+}
+
 model BusinessSettings {
   id          String  @id @default("default")
   shopName    String  @default("The Studio")
@@ -38,6 +83,10 @@ model BusinessSettings {
 
 model Service {
   id              String            @id @default(cuid())
+  // Nullable for now — migration 1 backfills every existing row, migration 2
+  // makes this required once the backfill has run in production.
+  businessId      String?
+  business        Business?         @relation(fields: [businessId], references: [id], onDelete: Cascade)
   name            String
   description     String?
   category        ServiceCategory
@@ -49,10 +98,14 @@ model Service {
   appointments    Appointment[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
+
+  @@index([businessId, active])
 }
 
 model Staff {
   id           String          @id @default(cuid())
+  businessId   String?
+  business     Business?       @relation(fields: [businessId], references: [id], onDelete: Cascade)
   name         String
   title        String?
   bio          String?
@@ -64,6 +117,8 @@ model Staff {
   appointments Appointment[]
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
+
+  @@index([businessId, active])
 }
 
 model StaffService {
@@ -101,7 +156,12 @@ model TimeOff {
 
 model Customer {
   id           String        @id @default(cuid())
+  businessId   String?
+  business     Business?     @relation(fields: [businessId], references: [id], onDelete: Cascade)
   name         String
+  // Globally unique for now (migration 1). Migration 2 swaps this to
+  // @@unique([businessId, email]) once businessId is required everywhere,
+  // so the same person can be a customer at two different businesses.
   email        String        @unique
   phone        String?
   notes        String?
@@ -112,6 +172,8 @@ model Customer {
 
 model Appointment {
   id         String            @id @default(cuid())
+  businessId String?
+  business   Business?         @relation(fields: [businessId], references: [id], onDelete: Cascade)
   serviceId  String
   service    Service           @relation(fields: [serviceId], references: [id])
   staffId    String
@@ -125,14 +187,18 @@ model Appointment {
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
 
-  @@index([staffId, startsAt])
+  @@index([businessId, staffId, startsAt])
   @@index([customerId])
 }
 
 model AdminUser {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  businessId   String?
+  business     Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  // Globally unique — the single global /admin/login form resolves
+  // email -> admin -> business with no slug in the URL to disambiguate.
+  email        String    @unique
   passwordHash String
   name         String?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
 }
