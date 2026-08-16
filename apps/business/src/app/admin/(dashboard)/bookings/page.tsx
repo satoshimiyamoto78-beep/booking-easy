@@ -1,15 +1,17 @@
 import { verifySession } from "@/lib/dal";
 import { prisma, AppointmentStatus } from "@booking-easy/db";
+import { formatPrice } from "@booking-easy/shared";
 import { updateAppointmentStatus } from "@/lib/actions/admin";
+import { CalendarX2 } from "lucide-react";
 
 const STATUS_OPTIONS = Object.values(AppointmentStatus);
 
-const STATUS_STYLES: Record<string, string> = {
-  PENDING: "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/10 dark:text-yellow-400",
-  CONFIRMED: "bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400",
-  CANCELLED: "bg-red-100 text-red-800 dark:bg-red-500/10 dark:text-red-400",
-  COMPLETED: "bg-green-100 text-green-800 dark:bg-green-500/10 dark:text-green-400",
-  NO_SHOW: "bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
+const STATUS_BADGE: Record<string, string> = {
+  PENDING: "badge-pending",
+  CONFIRMED: "badge-confirmed",
+  CANCELLED: "badge-cancelled",
+  COMPLETED: "badge-completed",
+  NO_SHOW: "badge-noshow",
 };
 
 export default async function AdminBookingsPage() {
@@ -24,78 +26,137 @@ export default async function AdminBookingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Bookings</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Bookings</h1>
+      <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
+        {appointments.length} most recent appointment{appointments.length === 1 ? "" : "s"}
+      </p>
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800">
-        <table className="w-full text-sm">
-          <thead className="bg-neutral-100 text-left text-xs uppercase text-neutral-500 dark:bg-neutral-900">
-            <tr>
-              <th className="px-4 py-2">When</th>
-              <th className="px-4 py-2">Customer</th>
-              <th className="px-4 py-2">Service</th>
-              <th className="px-4 py-2">Staff</th>
-              <th className="px-4 py-2">Status</th>
-              <th className="px-4 py-2">Update</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-            {appointments.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-neutral-500">
-                  No bookings yet.
-                </td>
-              </tr>
-            )}
+      {appointments.length === 0 ? (
+        <div className="card mt-6 flex flex-col items-center gap-3 p-12 text-center">
+          <CalendarX2 size={28} style={{ color: "var(--text-tertiary)" }} />
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            No bookings yet.
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Mobile: card list */}
+          <div className="mt-6 flex flex-col gap-3 sm:hidden">
             {appointments.map((appt) => (
-              <tr key={appt.id}>
-                <td className="whitespace-nowrap px-4 py-3">
-                  {appt.startsAt.toLocaleString([], {
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
-                </td>
-                <td className="px-4 py-3">
-                  <div>{appt.customer.name}</div>
-                  <div className="text-xs text-neutral-500">{appt.customer.email}</div>
-                </td>
-                <td className="px-4 py-3">{appt.service.name}</td>
-                <td className="px-4 py-3">{appt.staff.name}</td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_STYLES[appt.status]}`}
-                  >
-                    {appt.status}
+              <div key={appt.id} className="card p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold">{appt.customer.name}</p>
+                    <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+                      {appt.startsAt.toLocaleString([], {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                  <span className={`badge ${STATUS_BADGE[appt.status]}`}>
+                    <span className="badge-dot" />
+                    {appt.status.replace("_", " ")}
                   </span>
-                </td>
-                <td className="px-4 py-3">
-                  <form action={updateAppointmentStatus} className="flex items-center gap-2">
-                    <input type="hidden" name="appointmentId" value={appt.id} />
-                    <select
-                      name="status"
-                      defaultValue={appt.status}
-                      className="rounded-lg border border-neutral-300 bg-transparent px-2 py-1 text-xs dark:border-neutral-700"
-                    >
-                      {STATUS_OPTIONS.map((status) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="submit"
-                      className="rounded-lg border border-neutral-300 px-2 py-1 text-xs font-medium hover:border-amber-500 dark:border-neutral-700"
-                    >
-                      Save
-                    </button>
-                  </form>
-                </td>
-              </tr>
+                </div>
+                <p className="mt-3 text-sm" style={{ color: "var(--text-secondary)" }}>
+                  {appt.service.name} with {appt.staff.name}
+                </p>
+                <p className="mt-1 text-sm font-semibold" style={{ color: "var(--accent)" }}>
+                  {formatPrice(appt.service.priceCents)}
+                </p>
+                <form action={updateAppointmentStatus} className="mt-3 flex items-center gap-2">
+                  <input type="hidden" name="appointmentId" value={appt.id} />
+                  <select name="status" defaultValue={appt.status} className="select flex-1">
+                    {STATUS_OPTIONS.map((status) => (
+                      <option key={status} value={status}>
+                        {status.replace("_", " ")}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="submit" className="btn btn-secondary btn-sm">
+                    Save
+                  </button>
+                </form>
+              </div>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </div>
+
+          {/* Desktop: table */}
+          <div className="card mt-6 hidden overflow-hidden sm:block">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+                  {["When", "Customer", "Service", "Staff", "Status", "Update"].map((h) => (
+                    <th
+                      key={h}
+                      className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider"
+                      style={{ color: "var(--text-tertiary)" }}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {appointments.map((appt) => (
+                  <tr key={appt.id} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+                    <td className="whitespace-nowrap px-5 py-3.5">
+                      {appt.startsAt.toLocaleString([], {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="font-medium">{appt.customer.name}</div>
+                      <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+                        {appt.customer.email}
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      {appt.service.name}
+                      <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+                        {formatPrice(appt.service.priceCents)}
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5">{appt.staff.name}</td>
+                    <td className="px-5 py-3.5">
+                      <span className={`badge ${STATUS_BADGE[appt.status]}`}>
+                        <span className="badge-dot" />
+                        {appt.status.replace("_", " ")}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <form action={updateAppointmentStatus} className="flex items-center gap-2">
+                        <input type="hidden" name="appointmentId" value={appt.id} />
+                        <select
+                          name="status"
+                          defaultValue={appt.status}
+                          className="select"
+                          style={{ padding: "0.4rem 2.2rem 0.4rem 0.7rem", fontSize: "0.75rem" }}
+                        >
+                          {STATUS_OPTIONS.map((status) => (
+                            <option key={status} value={status}>
+                              {status.replace("_", " ")}
+                            </option>
+                          ))}
+                        </select>
+                        <button type="submit" className="btn btn-secondary btn-sm">
+                          Save
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 }

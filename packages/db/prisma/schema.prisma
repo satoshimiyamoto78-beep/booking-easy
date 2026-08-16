@@ -51,6 +51,10 @@ model Business {
   email     String?
   instagram String?
 
+  // Customer-facing branding, shown on the public /[slug] booking site.
+  brandColor String? @default("#0f9d70")
+  logoUrl    String?
+
   stripeCustomerId     String?  @unique
   stripeSubscriptionId String?  @unique
   stripePriceId        String?

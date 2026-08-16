@@ -1,4 +1,6 @@
 import { DAY_LABELS, minutesToTime } from "@/lib/schedule";
+import { ToggleField } from "@/components/ui/toggle-field";
+import { ImageUploadField } from "@/components/ui/image-upload-field";
 
 type ServiceOption = { id: string; name: string };
 type ScheduleEntry = { dayOfWeek: number; startMinute: number; endMinute: number };
@@ -9,6 +11,7 @@ type StaffFormValues = {
   title?: string | null;
   bio?: string | null;
   active?: boolean;
+  photoUrl?: string | null;
   serviceIds?: string[];
   schedule?: ScheduleEntry[];
 };
@@ -35,19 +38,13 @@ export function StaffForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium">
+          <label htmlFor="name" className="field-label">
             Name
           </label>
-          <input
-            id="name"
-            name="name"
-            required
-            defaultValue={defaultValues?.name}
-            className="mt-1 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
-          />
+          <input id="name" name="name" required defaultValue={defaultValues?.name} className="input" />
         </div>
         <div>
-          <label htmlFor="title" className="block text-sm font-medium">
+          <label htmlFor="title" className="field-label">
             Title
           </label>
           <input
@@ -55,13 +52,13 @@ export function StaffForm({
             name="title"
             defaultValue={defaultValues?.title ?? ""}
             placeholder="e.g. Master Barber"
-            className="mt-1 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+            className="input"
           />
         </div>
       </div>
 
       <div>
-        <label htmlFor="bio" className="block text-sm font-medium">
+        <label htmlFor="bio" className="field-label">
           Bio
         </label>
         <textarea
@@ -69,31 +66,26 @@ export function StaffForm({
           name="bio"
           rows={2}
           defaultValue={defaultValues?.bio ?? ""}
-          className="mt-1 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+          className="textarea"
         />
       </div>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          name="active"
-          defaultChecked={defaultValues?.active ?? true}
-          className="rounded border-neutral-300 dark:border-neutral-700"
-        />
-        Active
-      </label>
+      <ImageUploadField name="photoUrl" label="Photo" defaultValue={defaultValues?.photoUrl} shape="circle" />
+
+      <div className="card p-4">
+        <ToggleField name="active" label="Active" defaultChecked={defaultValues?.active ?? true} />
+      </div>
 
       <div>
-        <p className="text-sm font-medium">Services offered</p>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <p className="field-label">Services offered</p>
+        <div className="flex flex-wrap gap-2">
           {services.map((service) => (
-            <label key={service.id} className="flex items-center gap-2 text-sm">
+            <label key={service.id} className="chip-checkbox">
               <input
                 type="checkbox"
                 name="serviceIds"
                 value={service.id}
                 defaultChecked={selectedServiceIds.has(service.id)}
-                className="rounded border-neutral-300 dark:border-neutral-700"
               />
               {service.name}
             </label>
@@ -102,18 +94,23 @@ export function StaffForm({
       </div>
 
       <div>
-        <p className="text-sm font-medium">Weekly schedule</p>
-        <div className="mt-2 space-y-2">
+        <p className="field-label">Weekly schedule</p>
+        <div className="card divide-y" style={{ borderColor: "var(--border-subtle)" }}>
           {DAY_LABELS.map((label, day) => {
             const existing = scheduleByDay.get(day);
             return (
-              <div key={day} className="flex items-center gap-3 text-sm">
-                <label className="flex w-32 items-center gap-2">
+              <div
+                key={day}
+                className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm"
+                style={{ borderColor: "var(--border-subtle)" }}
+              >
+                <label className="flex w-28 items-center gap-2 font-medium">
                   <input
                     type="checkbox"
                     name={`day-${day}-enabled`}
                     defaultChecked={Boolean(existing)}
-                    className="rounded border-neutral-300 dark:border-neutral-700"
+                    className="h-4 w-4 rounded"
+                    style={{ accentColor: "var(--accent)" }}
                   />
                   {label}
                 </label>
@@ -121,14 +118,16 @@ export function StaffForm({
                   type="time"
                   name={`day-${day}-start`}
                   defaultValue={existing ? minutesToTime(existing.startMinute) : "09:00"}
-                  className="rounded-lg border border-neutral-300 bg-transparent px-2 py-1 text-sm dark:border-neutral-700"
+                  className="input"
+                  style={{ width: "auto" }}
                 />
-                <span className="text-neutral-400">to</span>
+                <span style={{ color: "var(--text-tertiary)" }}>to</span>
                 <input
                   type="time"
                   name={`day-${day}-end`}
                   defaultValue={existing ? minutesToTime(existing.endMinute) : "18:00"}
-                  className="rounded-lg border border-neutral-300 bg-transparent px-2 py-1 text-sm dark:border-neutral-700"
+                  className="input"
+                  style={{ width: "auto" }}
                 />
               </div>
             );
@@ -136,10 +135,7 @@ export function StaffForm({
         </div>
       </div>
 
-      <button
-        type="submit"
-        className="rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-neutral-950"
-      >
+      <button type="submit" className="btn btn-primary">
         {submitLabel}
       </button>
     </form>

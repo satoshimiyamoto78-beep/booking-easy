@@ -16,6 +16,7 @@ const ServiceSchema = z.object({
   durationMinutes: z.coerce.number().int().min(5).max(600),
   priceCents: z.coerce.number().int().min(0),
   active: z.coerce.boolean(),
+  imageUrl: z.string().trim().optional(),
 });
 
 export async function createService(formData: FormData) {
@@ -28,6 +29,7 @@ export async function createService(formData: FormData) {
     durationMinutes: formData.get("durationMinutes"),
     priceCents: Math.round(Number(formData.get("price")) * 100),
     active: formData.get("active") === "on",
+    imageUrl: formData.get("imageUrl") || undefined,
   });
 
   await prisma.service.create({ data: { ...parsed, businessId } });
@@ -46,6 +48,7 @@ export async function updateService(formData: FormData) {
     durationMinutes: formData.get("durationMinutes"),
     priceCents: Math.round(Number(formData.get("price")) * 100),
     active: formData.get("active") === "on",
+    imageUrl: formData.get("imageUrl") || undefined,
   });
 
   await prisma.service.update({ where: { id, businessId }, data: parsed });
@@ -58,6 +61,7 @@ export async function deleteService(formData: FormData) {
   const id = formData.get("id") as string;
   await prisma.service.delete({ where: { id, businessId } });
   revalidatePath("/admin/services");
+  redirect("/admin/services");
 }
 
 // ---------- Staff ----------
@@ -67,6 +71,7 @@ const StaffSchema = z.object({
   title: z.string().trim().optional(),
   bio: z.string().trim().optional(),
   active: z.coerce.boolean(),
+  photoUrl: z.string().trim().optional(),
 });
 
 function parseServiceIds(formData: FormData): string[] {
@@ -97,6 +102,7 @@ export async function createStaff(formData: FormData) {
     title: formData.get("title") || undefined,
     bio: formData.get("bio") || undefined,
     active: formData.get("active") === "on",
+    photoUrl: formData.get("photoUrl") || undefined,
   });
   const serviceIds = parseServiceIds(formData);
   const schedule = parseSchedule(formData);
@@ -125,6 +131,7 @@ export async function updateStaff(formData: FormData) {
     title: formData.get("title") || undefined,
     bio: formData.get("bio") || undefined,
     active: formData.get("active") === "on",
+    photoUrl: formData.get("photoUrl") || undefined,
   });
   const serviceIds = parseServiceIds(formData);
   const schedule = parseSchedule(formData);
@@ -153,6 +160,7 @@ export async function deleteStaff(formData: FormData) {
   const id = formData.get("id") as string;
   await prisma.staff.delete({ where: { id, businessId } });
   revalidatePath("/admin/staff");
+  redirect("/admin/staff");
 }
 
 // ---------- Appointments ----------

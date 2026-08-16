@@ -102,15 +102,15 @@ export function BookingWizard({
           <li
             key={label}
             className={`flex items-center gap-2 ${
-              step === i + 1 ? "text-amber-600 dark:text-amber-400" : ""
+              step === i + 1 ? "text-[var(--brand)]" : ""
             }`}
           >
             <span
               className={`flex h-5 w-5 items-center justify-center rounded-full border text-[11px] ${
                 step > i + 1
-                  ? "border-amber-500 bg-amber-500 text-white"
+                  ? "border-[var(--brand)] bg-[var(--brand)] text-white"
                   : step === i + 1
-                    ? "border-amber-500"
+                    ? "border-[var(--brand)]"
                     : "border-neutral-300 dark:border-neutral-700"
               }`}
             >
@@ -141,8 +141,8 @@ export function BookingWizard({
                     }}
                     className={`rounded-xl border p-4 text-left transition ${
                       serviceId === service.id
-                        ? "border-amber-500 ring-1 ring-amber-500"
-                        : "border-neutral-200 hover:border-amber-400 dark:border-neutral-800"
+                        ? "border-[var(--brand)] ring-1 ring-[var(--brand)]"
+                        : "border-neutral-200 hover:border-[var(--brand)] dark:border-neutral-800"
                     }`}
                   >
                     <p className="font-medium">{service.name}</p>
@@ -186,8 +186,8 @@ export function BookingWizard({
                   }}
                   className={`rounded-xl border p-4 text-left transition ${
                     staffId === member.id
-                      ? "border-amber-500 ring-1 ring-amber-500"
-                      : "border-neutral-200 hover:border-amber-400 dark:border-neutral-800"
+                      ? "border-[var(--brand)] ring-1 ring-[var(--brand)]"
+                      : "border-neutral-200 hover:border-[var(--brand)] dark:border-neutral-800"
                   }`}
                 >
                   <p className="font-medium">{member.name}</p>
@@ -263,8 +263,8 @@ export function BookingWizard({
                       onClick={() => setSelectedSlot(slot)}
                       className={`rounded-lg border px-3 py-2 text-sm transition ${
                         isSelected
-                          ? "border-amber-500 bg-amber-500 text-neutral-950"
-                          : "border-neutral-200 hover:border-amber-400 dark:border-neutral-800"
+                          ? "border-[var(--brand)] bg-[var(--brand)] text-neutral-950"
+                          : "border-neutral-200 hover:border-[var(--brand)] dark:border-neutral-800"
                       }`}
                     >
                       {label}
@@ -377,7 +377,7 @@ export function BookingWizard({
             <button
               type="submit"
               disabled={pending}
-              className="rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-neutral-950 disabled:opacity-60"
+              className="rounded-full bg-[var(--brand)] px-6 py-2.5 text-sm font-semibold text-neutral-950 disabled:opacity-60"
             >
               {pending ? "Booking…" : "Confirm booking"}
             </button>

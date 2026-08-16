@@ -1,4 +1,6 @@
 import { ServiceCategory } from "@booking-easy/db";
+import { ToggleField } from "@/components/ui/toggle-field";
+import { ImageUploadField } from "@/components/ui/image-upload-field";
 
 type ServiceFormValues = {
   id?: string;
@@ -8,6 +10,7 @@ type ServiceFormValues = {
   durationMinutes?: number;
   priceCents?: number;
   active?: boolean;
+  imageUrl?: string | null;
 };
 
 export function ServiceForm({
@@ -20,24 +23,18 @@ export function ServiceForm({
   submitLabel: string;
 }) {
   return (
-    <form action={action} className="max-w-xl space-y-4">
+    <form action={action} className="max-w-2xl space-y-6">
       {defaultValues?.id && <input type="hidden" name="id" value={defaultValues.id} />}
 
       <div>
-        <label htmlFor="name" className="block text-sm font-medium">
+        <label htmlFor="name" className="field-label">
           Name
         </label>
-        <input
-          id="name"
-          name="name"
-          required
-          defaultValue={defaultValues?.name}
-          className="mt-1 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
-        />
+        <input id="name" name="name" required defaultValue={defaultValues?.name} className="input" />
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium">
+        <label htmlFor="description" className="field-label">
           Description
         </label>
         <textarea
@@ -45,20 +42,27 @@ export function ServiceForm({
           name="description"
           rows={2}
           defaultValue={defaultValues?.description ?? ""}
-          className="mt-1 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+          className="textarea"
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <ImageUploadField
+        name="imageUrl"
+        label="Photo"
+        defaultValue={defaultValues?.imageUrl}
+        hint="Shown on the services grid and the customer booking page."
+      />
+
+      <div className="grid gap-4 sm:grid-cols-3">
         <div>
-          <label htmlFor="category" className="block text-sm font-medium">
+          <label htmlFor="category" className="field-label">
             Category
           </label>
           <select
             id="category"
             name="category"
             defaultValue={defaultValues?.category ?? ServiceCategory.BARBER}
-            className="mt-1 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+            className="select"
           >
             <option value={ServiceCategory.BARBER}>Barbershop</option>
             <option value={ServiceCategory.SPA}>Spa</option>
@@ -66,7 +70,7 @@ export function ServiceForm({
           </select>
         </div>
         <div>
-          <label htmlFor="durationMinutes" className="block text-sm font-medium">
+          <label htmlFor="durationMinutes" className="field-label">
             Duration (min)
           </label>
           <input
@@ -77,11 +81,11 @@ export function ServiceForm({
             step={5}
             required
             defaultValue={defaultValues?.durationMinutes ?? 30}
-            className="mt-1 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+            className="input"
           />
         </div>
         <div>
-          <label htmlFor="price" className="block text-sm font-medium">
+          <label htmlFor="price" className="field-label">
             Price ($)
           </label>
           <input
@@ -96,25 +100,21 @@ export function ServiceForm({
                 ? (defaultValues.priceCents / 100).toFixed(2)
                 : undefined
             }
-            className="mt-1 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+            className="input"
           />
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
+      <div className="card p-4">
+        <ToggleField
           name="active"
+          label="Visible to customers"
+          description="Turn off to hide this service from the booking page."
           defaultChecked={defaultValues?.active ?? true}
-          className="rounded border-neutral-300 dark:border-neutral-700"
         />
-        Visible to customers
-      </label>
+      </div>
 
-      <button
-        type="submit"
-        className="rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-neutral-950"
-      >
+      <button type="submit" className="btn btn-primary">
         {submitLabel}
       </button>
     </form>

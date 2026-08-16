@@ -9,20 +9,13 @@ export function LoginForm() {
   return (
     <form action={action} className="mt-6 space-y-4">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-neutral-300">
+        <label htmlFor="email" className="field-label">
           Email
         </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-white outline-none focus:border-amber-500"
-        />
+        <input id="email" name="email" type="email" required autoComplete="email" className="input" />
       </div>
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-neutral-300">
+        <label htmlFor="password" className="field-label">
           Password
         </label>
         <input
@@ -31,15 +24,15 @@ export function LoginForm() {
           type="password"
           required
           autoComplete="current-password"
-          className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-white outline-none focus:border-amber-500"
+          className="input"
         />
       </div>
-      {state?.error && <p className="text-sm text-red-400">{state.error}</p>}
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-lg bg-amber-500 px-4 py-2 font-medium text-neutral-950 transition hover:bg-amber-400 disabled:opacity-60"
-      >
+      {state?.error && (
+        <p className="text-sm" style={{ color: "var(--status-cancelled-fg)" }}>
+          {state.error}
+        </p>
+      )}
+      <button type="submit" disabled={pending} className="btn btn-primary w-full">
         {pending ? "Signing in…" : "Sign in"}
       </button>
     </form>

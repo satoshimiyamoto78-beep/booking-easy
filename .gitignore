@@ -16,6 +16,8 @@
 # next.js
 .next/
 /out/
+/apps/*/AGENTS.md
+/apps/*/CLAUDE.md
 
 # turborepo
 .turbo/

@@ -31,7 +31,10 @@ export default async function SlugLayout({
   if (!business) notFound();
 
   return (
-    <div className="flex min-h-full flex-1 flex-col">
+    <div
+      className="flex min-h-full flex-1 flex-col"
+      style={{ "--brand": business.brandColor || "#f59e0b" } as React.CSSProperties}
+    >
       <SiteHeader business={business} />
       <main className="flex-1">{children}</main>
       <SiteFooter business={business} />

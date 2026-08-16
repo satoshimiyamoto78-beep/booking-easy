@@ -31,9 +31,9 @@ export default async function HomePage({
 
   return (
     <div>
-      <section className="border-b border-neutral-200 bg-gradient-to-b from-amber-50 to-white dark:border-neutral-800 dark:from-neutral-900 dark:to-neutral-950">
+      <section className="border-b border-neutral-200 bg-gradient-to-b from-[var(--brand)]/10 to-white dark:border-neutral-800 dark:from-neutral-900 dark:to-neutral-950">
         <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
-          <p className="text-sm font-medium uppercase tracking-widest text-amber-600 dark:text-amber-400">
+          <p className="text-sm font-medium uppercase tracking-widest text-[var(--brand)]">
             {business.tagline ?? "Book online"}
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
@@ -46,13 +46,13 @@ export default async function HomePage({
           <div className="mt-8 flex justify-center gap-3">
             <Link
               href={`/${slug}/book`}
-              className="rounded-full bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-amber-500 hover:text-neutral-950 dark:bg-white dark:text-neutral-900"
+              className="rounded-full bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand)] hover:text-neutral-950 dark:bg-white dark:text-neutral-900"
             >
               Book an appointment
             </Link>
             <Link
               href={`/${slug}/services`}
-              className="rounded-full border border-neutral-300 px-6 py-3 text-sm font-semibold transition hover:border-amber-500 hover:text-amber-600 dark:border-neutral-700 dark:hover:text-amber-400"
+              className="rounded-full border border-neutral-300 px-6 py-3 text-sm font-semibold transition hover:border-[var(--brand)] hover:text-[var(--brand)] dark:border-neutral-700"
             >
               View services
             </Link>
@@ -73,7 +73,7 @@ export default async function HomePage({
                 <h2 className="text-2xl font-semibold">{formatCategory(category)}</h2>
                 <Link
                   href={`/${slug}/services`}
-                  className="text-sm font-medium text-amber-600 hover:underline dark:text-amber-400"
+                  className="text-sm font-medium text-[var(--brand)] hover:underline"
                 >
                   See all
                 </Link>
@@ -111,7 +111,7 @@ export default async function HomePage({
             <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {staff.map((member) => (
                 <div key={member.id} className="text-center">
-                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-xl font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[var(--brand)]/12 text-xl font-semibold text-[var(--brand)]">
                     {member.name
                       .split(" ")
                       .map((part) => part[0])

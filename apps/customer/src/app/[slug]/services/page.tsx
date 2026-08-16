@@ -55,7 +55,7 @@ export default async function ServicesPage({
                     <span className="font-semibold">{formatPrice(service.priceCents)}</span>
                     <Link
                       href={`/${slug}/book?service=${service.id}`}
-                      className="text-sm font-medium text-amber-600 hover:underline dark:text-amber-400"
+                      className="text-sm font-medium text-[var(--brand)] hover:underline"
                     >
                       Book
                     </Link>
