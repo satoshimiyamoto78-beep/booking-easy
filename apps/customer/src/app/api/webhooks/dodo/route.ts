@@ -33,31 +33,35 @@ async function upsertFromSubscription(payload: SubscriptionPayload, status: Subs
   });
 }
 
-// Read directly (not via a throwing helper) — this module is imported during
-// Next's build-time page-data collection, before runtime env vars are set,
-// so an eager throw here would break every build.
-export const POST = Webhooks({
-  webhookKey: process.env.DODO_PAYMENTS_WEBHOOK_KEY ?? "",
+// Webhooks() throws eagerly if the key is empty, and this module is imported
+// during Next's build-time page-data collection — so until the real signing
+// secret is set, skip calling it entirely rather than break every build.
+const webhookKey = process.env.DODO_PAYMENTS_WEBHOOK_KEY;
 
-  onSubscriptionActive: async (payload) => {
-    await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.ACTIVE);
-  },
-  onSubscriptionRenewed: async (payload) => {
-    await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.ACTIVE);
-  },
-  onSubscriptionPlanChanged: async (payload) => {
-    await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.ACTIVE);
-  },
-  onSubscriptionOnHold: async (payload) => {
-    await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.PAST_DUE);
-  },
-  onSubscriptionFailed: async (payload) => {
-    await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.PAST_DUE);
-  },
-  onSubscriptionCancelled: async (payload) => {
-    await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.CANCELED);
-  },
-  onSubscriptionExpired: async (payload) => {
-    await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.CANCELED);
-  },
-});
+export const POST = webhookKey
+  ? Webhooks({
+      webhookKey,
+
+      onSubscriptionActive: async (payload) => {
+        await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.ACTIVE);
+      },
+      onSubscriptionRenewed: async (payload) => {
+        await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.ACTIVE);
+      },
+      onSubscriptionPlanChanged: async (payload) => {
+        await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.ACTIVE);
+      },
+      onSubscriptionOnHold: async (payload) => {
+        await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.PAST_DUE);
+      },
+      onSubscriptionFailed: async (payload) => {
+        await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.PAST_DUE);
+      },
+      onSubscriptionCancelled: async (payload) => {
+        await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.CANCELED);
+      },
+      onSubscriptionExpired: async (payload) => {
+        await upsertFromSubscription(payload as unknown as SubscriptionPayload, SubscriptionStatus.CANCELED);
+      },
+    })
+  : async () => new Response("Dodo webhook not configured", { status: 501 });
