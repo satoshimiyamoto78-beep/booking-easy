@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@booking-easy/db";
 import { getBusinessBySlug } from "@/lib/business";
 import { formatCategory, formatDuration, formatPrice } from "@booking-easy/shared";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -23,11 +24,10 @@ export default async function ServicesPage({
   });
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-semibold">Services</h1>
-      <p className="mt-2 text-neutral-600 dark:text-neutral-400">
-        Prices and durations below. Book online and choose your preferred
-        team member.
+    <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20">
+      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Services</h1>
+      <p className="mt-2 max-w-xl" style={{ color: "var(--text-secondary)" }}>
+        Prices and durations below. Book online and choose your preferred team member.
       </p>
 
       {CATEGORIES.map((category) => {
@@ -35,34 +35,53 @@ export default async function ServicesPage({
         if (categoryServices.length === 0) return null;
 
         return (
-          <div key={category} className="mt-12">
-            <h2 className="text-xl font-semibold">{formatCategory(category)}</h2>
-            <ul className="mt-4 divide-y divide-neutral-200 dark:divide-neutral-800">
+          <div key={category} className="mt-14 first:mt-12">
+            <h2 className="text-xl font-semibold tracking-tight">{formatCategory(category)}</h2>
+            <div className="mt-5 grid gap-3">
               {categoryServices.map((service) => (
-                <li key={service.id} className="flex items-start justify-between gap-4 py-4">
-                  <div>
+                <Link
+                  key={service.id}
+                  href={`/${slug}/book?service=${service.id}`}
+                  className="card group flex items-center gap-4 p-4 transition-shadow hover:shadow-lg sm:p-5"
+                >
+                  <div
+                    className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl"
+                    style={{ background: "color-mix(in srgb, var(--brand) 10%, var(--surface))" }}
+                  >
+                    {service.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={service.imageUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <Sparkles size={20} style={{ color: "var(--brand)" }} />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium">{service.name}</p>
                     {service.description && (
-                      <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
+                      <p
+                        className="mt-0.5 truncate text-sm"
+                        style={{ color: "var(--text-tertiary)" }}
+                      >
                         {service.description}
                       </p>
                     )}
-                    <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                    <p className="mt-1 text-sm" style={{ color: "var(--text-tertiary)" }}>
                       {formatDuration(service.durationMinutes)}
                     </p>
                   </div>
-                  <div className="flex shrink-0 flex-col items-end gap-2">
-                    <span className="font-semibold">{formatPrice(service.priceCents)}</span>
-                    <Link
-                      href={`/${slug}/book?service=${service.id}`}
-                      className="text-sm font-medium text-[var(--brand)] hover:underline"
-                    >
-                      Book
-                    </Link>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <span className="font-semibold" style={{ color: "var(--brand)" }}>
+                      {formatPrice(service.priceCents)}
+                    </span>
+                    <ArrowRight
+                      size={16}
+                      className="opacity-0 transition-opacity group-hover:opacity-100"
+                      style={{ color: "var(--text-tertiary)" }}
+                    />
                   </div>
-                </li>
+                </Link>
               ))}
-            </ul>
+            </div>
           </div>
         );
       })}

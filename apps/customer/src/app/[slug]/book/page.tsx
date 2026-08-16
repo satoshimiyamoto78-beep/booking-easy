@@ -46,9 +46,9 @@ export default async function BookPage({
   }));
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-semibold">Book an appointment</h1>
-      <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+    <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
+      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Book an appointment</h1>
+      <p className="mt-2" style={{ color: "var(--text-secondary)" }}>
         Pick a service, choose your stylist, and grab a time that works.
       </p>
       <div className="mt-10">

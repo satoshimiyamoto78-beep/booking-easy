@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@booking-easy/db";
 import { getBusinessBySlug } from "@/lib/business";
 import { formatPrice } from "@booking-easy/shared";
+import { Check } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -22,47 +23,51 @@ export default async function BookingConfirmedPage({
 
   if (!appointment) notFound();
 
+  const rows = [
+    { label: "Service", value: appointment.service.name },
+    { label: "With", value: appointment.staff.name },
+    {
+      label: "When",
+      value: appointment.startsAt.toLocaleString([], {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+    },
+    { label: "Price", value: formatPrice(appointment.service.priceCents) },
+  ];
+
   return (
-    <div className="mx-auto max-w-lg px-4 py-20 text-center sm:px-6">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-2xl dark:bg-green-500/10">
-        ✓
-      </div>
-      <h1 className="mt-6 text-2xl font-semibold">You&apos;re booked!</h1>
-      <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+    <div className="mx-auto max-w-lg px-4 py-20 text-center sm:px-6 sm:py-28">
+      <span
+        className="mx-auto flex h-16 w-16 items-center justify-center rounded-full"
+        style={{ background: "color-mix(in srgb, var(--brand) 14%, var(--surface))", color: "var(--brand)" }}
+      >
+        <Check size={28} strokeWidth={2.5} />
+      </span>
+      <h1 className="mt-6 text-2xl font-semibold tracking-tight sm:text-3xl">You&apos;re booked!</h1>
+      <p className="mt-2" style={{ color: "var(--text-secondary)" }}>
         A confirmation has been recorded for {appointment.customer.name}.
       </p>
 
-      <div className="mt-8 rounded-2xl border border-neutral-200 p-6 text-left text-sm dark:border-neutral-800">
-        <div className="flex justify-between border-b border-neutral-200 pb-3 dark:border-neutral-800">
-          <span className="text-neutral-500">Service</span>
-          <span className="font-medium">{appointment.service.name}</span>
-        </div>
-        <div className="flex justify-between border-b border-neutral-200 py-3 dark:border-neutral-800">
-          <span className="text-neutral-500">With</span>
-          <span className="font-medium">{appointment.staff.name}</span>
-        </div>
-        <div className="flex justify-between border-b border-neutral-200 py-3 dark:border-neutral-800">
-          <span className="text-neutral-500">When</span>
-          <span className="font-medium">
-            {appointment.startsAt.toLocaleString([], {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-            })}
-          </span>
-        </div>
-        <div className="flex justify-between pt-3">
-          <span className="text-neutral-500">Price</span>
-          <span className="font-medium">{formatPrice(appointment.service.priceCents)}</span>
-        </div>
+      <div className="card mt-8 p-6 text-left text-sm">
+        {rows.map((row, i) => (
+          <div
+            key={row.label}
+            className="flex justify-between py-3"
+            style={{
+              borderBottom: i < rows.length - 1 ? "1px solid var(--border-subtle)" : undefined,
+            }}
+          >
+            <span style={{ color: "var(--text-tertiary)" }}>{row.label}</span>
+            <span className="font-medium">{row.value}</span>
+          </div>
+        ))}
       </div>
 
-      <Link
-        href={`/${slug}`}
-        className="mt-8 inline-block rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-neutral-900"
-      >
+      <Link href={`/${slug}`} className="btn btn-primary mt-8">
         Back to home
       </Link>
     </div>

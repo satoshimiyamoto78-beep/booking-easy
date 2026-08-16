@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { createBooking } from "@/lib/actions/booking";
 import { formatCategory, formatDuration, formatPrice } from "@booking-easy/shared";
+import { Check } from "lucide-react";
 
 type ServiceOption = {
   id: string;
@@ -20,6 +21,8 @@ type StaffOption = {
 };
 
 type Slot = { startsAt: string; endsAt: string };
+
+const STEP_LABELS = ["Service", "Stylist", "Time", "Your info"];
 
 function todayIso() {
   const d = new Date();
@@ -97,36 +100,39 @@ export function BookingWizard({
 
   return (
     <div>
-      <ol className="mb-8 flex items-center gap-2 text-xs font-medium text-neutral-400">
-        {["Service", "Stylist", "Time", "Your info"].map((label, i) => (
-          <li
-            key={label}
-            className={`flex items-center gap-2 ${
-              step === i + 1 ? "text-[var(--brand)]" : ""
-            }`}
-          >
-            <span
-              className={`flex h-5 w-5 items-center justify-center rounded-full border text-[11px] ${
-                step > i + 1
-                  ? "border-[var(--brand)] bg-[var(--brand)] text-white"
-                  : step === i + 1
-                    ? "border-[var(--brand)]"
-                    : "border-neutral-300 dark:border-neutral-700"
-              }`}
+      <ol className="mb-10 flex items-center gap-2 text-xs font-medium">
+        {STEP_LABELS.map((label, i) => {
+          const stepNum = i + 1;
+          const stepState: "done" | "current" | "upcoming" =
+            step > stepNum ? "done" : step === stepNum ? "current" : "upcoming";
+          return (
+            <li
+              key={label}
+              className="flex items-center gap-2"
+              style={{ color: stepState === "upcoming" ? "var(--text-tertiary)" : "var(--text-primary)" }}
             >
-              {i + 1}
-            </span>
-            {label}
-            {i < 3 && <span className="mx-1 text-neutral-300 dark:text-neutral-700">/</span>}
-          </li>
-        ))}
+              <span className="step-dot" data-state={stepState}>
+                {stepState === "done" ? <Check size={12} strokeWidth={3} /> : stepNum}
+              </span>
+              <span className="hidden sm:inline">{label}</span>
+              {i < STEP_LABELS.length - 1 && (
+                <span className="mx-1" style={{ color: "var(--border-strong)" }}>
+                  /
+                </span>
+              )}
+            </li>
+          );
+        })}
       </ol>
 
       {step === 1 && (
         <div className="space-y-8">
           {[...grouped.entries()].map(([category, options]) => (
             <div key={category}>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+              <h3
+                className="text-xs font-semibold uppercase tracking-wider"
+                style={{ color: "var(--text-tertiary)" }}
+              >
                 {formatCategory(category)}
               </h3>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -139,14 +145,11 @@ export function BookingWizard({
                       setStaffId(null);
                       setSelectedSlot(null);
                     }}
-                    className={`rounded-xl border p-4 text-left transition ${
-                      serviceId === service.id
-                        ? "border-[var(--brand)] ring-1 ring-[var(--brand)]"
-                        : "border-neutral-200 hover:border-[var(--brand)] dark:border-neutral-800"
-                    }`}
+                    data-selected={serviceId === service.id}
+                    className="option-card p-4"
                   >
                     <p className="font-medium">{service.name}</p>
-                    <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                    <p className="mt-1 text-sm" style={{ color: "var(--text-tertiary)" }}>
                       {formatDuration(service.durationMinutes)} · {formatPrice(service.priceCents)}
                     </p>
                   </button>
@@ -160,7 +163,7 @@ export function BookingWizard({
               type="button"
               disabled={!serviceId}
               onClick={() => setStep(2)}
-              className="rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
+              className="btn btn-primary"
             >
               Continue
             </button>
@@ -171,7 +174,7 @@ export function BookingWizard({
       {step === 2 && selectedService && (
         <div className="space-y-6">
           {eligibleStaff.length === 0 ? (
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm" style={{ color: "var(--text-tertiary)" }}>
               No team members currently offer this service. Please choose a different service.
             </p>
           ) : (
@@ -184,15 +187,12 @@ export function BookingWizard({
                     setStaffId(member.id);
                     setSelectedSlot(null);
                   }}
-                  className={`rounded-xl border p-4 text-left transition ${
-                    staffId === member.id
-                      ? "border-[var(--brand)] ring-1 ring-[var(--brand)]"
-                      : "border-neutral-200 hover:border-[var(--brand)] dark:border-neutral-800"
-                  }`}
+                  data-selected={staffId === member.id}
+                  className="option-card p-4"
                 >
                   <p className="font-medium">{member.name}</p>
                   {member.title && (
-                    <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                    <p className="mt-1 text-sm" style={{ color: "var(--text-tertiary)" }}>
                       {member.title}
                     </p>
                   )}
@@ -202,18 +202,14 @@ export function BookingWizard({
           )}
 
           <div className="flex justify-between">
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="rounded-full border border-neutral-300 px-6 py-2.5 text-sm font-semibold dark:border-neutral-700"
-            >
+            <button type="button" onClick={() => setStep(1)} className="btn btn-secondary">
               Back
             </button>
             <button
               type="button"
               disabled={!staffId}
               onClick={() => setStep(3)}
-              className="rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
+              className="btn btn-primary"
             >
               Continue
             </button>
@@ -224,7 +220,7 @@ export function BookingWizard({
       {step === 3 && selectedStaff && (
         <div className="space-y-6">
           <div>
-            <label htmlFor="date" className="block text-sm font-medium">
+            <label htmlFor="date" className="field-label">
               Date
             </label>
             <input
@@ -236,16 +232,19 @@ export function BookingWizard({
                 setDate(e.target.value);
                 setSelectedSlot(null);
               }}
-              className="mt-1 rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+              className="input"
+              style={{ maxWidth: 220 }}
             />
           </div>
 
           <div>
-            <p className="text-sm font-medium">Available times</p>
+            <p className="field-label">Available times</p>
             {loadingSlots ? (
-              <p className="mt-3 text-sm text-neutral-500">Loading times…</p>
+              <p className="mt-3 text-sm" style={{ color: "var(--text-tertiary)" }}>
+                Loading times…
+              </p>
             ) : slots.length === 0 ? (
-              <p className="mt-3 text-sm text-neutral-500">
+              <p className="mt-3 text-sm" style={{ color: "var(--text-tertiary)" }}>
                 No openings that day. Try another date.
               </p>
             ) : (
@@ -261,11 +260,9 @@ export function BookingWizard({
                       key={slot.startsAt}
                       type="button"
                       onClick={() => setSelectedSlot(slot)}
-                      className={`rounded-lg border px-3 py-2 text-sm transition ${
-                        isSelected
-                          ? "border-[var(--brand)] bg-[var(--brand)] text-neutral-950"
-                          : "border-neutral-200 hover:border-[var(--brand)] dark:border-neutral-800"
-                      }`}
+                      data-selected={isSelected}
+                      className="option-card px-3 py-2.5 text-center text-sm font-medium"
+                      style={isSelected ? { background: "var(--brand)", color: "var(--brand-contrast)" } : undefined}
                     >
                       {label}
                     </button>
@@ -276,18 +273,14 @@ export function BookingWizard({
           </div>
 
           <div className="flex justify-between">
-            <button
-              type="button"
-              onClick={() => setStep(2)}
-              className="rounded-full border border-neutral-300 px-6 py-2.5 text-sm font-semibold dark:border-neutral-700"
-            >
+            <button type="button" onClick={() => setStep(2)} className="btn btn-secondary">
               Back
             </button>
             <button
               type="button"
               disabled={!selectedSlot}
               onClick={() => setStep(4)}
-              className="rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
+              className="btn btn-primary"
             >
               Continue
             </button>
@@ -302,9 +295,9 @@ export function BookingWizard({
           <input type="hidden" name="staffId" value={selectedStaff.id} />
           <input type="hidden" name="startsAt" value={selectedSlot.startsAt} />
 
-          <div className="rounded-xl border border-neutral-200 p-4 text-sm dark:border-neutral-800">
+          <div className="card p-4 text-sm">
             <p className="font-medium">{selectedService.name}</p>
-            <p className="text-neutral-500 dark:text-neutral-400">
+            <p style={{ color: "var(--text-tertiary)" }}>
               with {selectedStaff.name} ·{" "}
               {new Date(selectedSlot.startsAt).toLocaleString([], {
                 weekday: "short",
@@ -318,67 +311,42 @@ export function BookingWizard({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium">
+              <label htmlFor="name" className="field-label">
                 Full name
               </label>
-              <input
-                id="name"
-                name="name"
-                required
-                className="mt-1 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
-              />
+              <input id="name" name="name" required className="input" />
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium">
+              <label htmlFor="email" className="field-label">
                 Email
               </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="mt-1 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
-              />
+              <input id="email" name="email" type="email" required className="input" />
             </div>
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium">
+              <label htmlFor="phone" className="field-label">
                 Phone (optional)
               </label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                className="mt-1 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
-              />
+              <input id="phone" name="phone" type="tel" className="input" />
             </div>
             <div className="sm:col-span-2">
-              <label htmlFor="notes" className="block text-sm font-medium">
+              <label htmlFor="notes" className="field-label">
                 Notes (optional)
               </label>
-              <textarea
-                id="notes"
-                name="notes"
-                rows={3}
-                className="mt-1 w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
-              />
+              <textarea id="notes" name="notes" rows={3} className="textarea" />
             </div>
           </div>
 
-          {state?.error && <p className="text-sm text-red-500">{state.error}</p>}
+          {state?.error && (
+            <p className="text-sm" style={{ color: "#dc4b30" }}>
+              {state.error}
+            </p>
+          )}
 
           <div className="flex justify-between">
-            <button
-              type="button"
-              onClick={() => setStep(3)}
-              className="rounded-full border border-neutral-300 px-6 py-2.5 text-sm font-semibold dark:border-neutral-700"
-            >
+            <button type="button" onClick={() => setStep(3)} className="btn btn-secondary">
               Back
             </button>
-            <button
-              type="submit"
-              disabled={pending}
-              className="rounded-full bg-[var(--brand)] px-6 py-2.5 text-sm font-semibold text-neutral-950 disabled:opacity-60"
-            >
+            <button type="submit" disabled={pending} className="btn btn-primary">
               {pending ? "Booking…" : "Confirm booking"}
             </button>
           </div>
