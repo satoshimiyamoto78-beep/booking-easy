@@ -1,0 +1,275 @@
+@import "tailwindcss";
+
+:root {
+  --ink-950: #0b0d10;
+  --ink-900: #12151a;
+  --ink-850: #161a20;
+  --ink-800: #1c2129;
+  --ink-700: #262c35;
+  --ink-600: #333a45;
+  --ink-500: #4b5563;
+  --ink-400: #6b7280;
+  --ink-300: #9aa3af;
+  --ink-200: #cdd3da;
+  --ink-100: #e7eaee;
+  --ink-50: #f6f7f8;
+
+  --paper: #f7f7f5;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --border-subtle: #e7e6e2;
+  --border-strong: #d8d6d0;
+  --text-primary: #17181a;
+  --text-secondary: #5c6067;
+  --text-tertiary: #8b8f96;
+
+  --accent: #6d4de0;
+  --accent-strong: #5936cf;
+  --accent-soft: rgba(109, 77, 224, 0.12);
+  --accent-soft-strong: rgba(109, 77, 224, 0.2);
+  --accent-contrast: #f8f6ff;
+
+  --status-pending-fg: #a5680f;
+  --status-pending-bg: rgba(216, 148, 20, 0.14);
+  --status-confirmed-fg: #2454c7;
+  --status-confirmed-bg: rgba(59, 96, 220, 0.12);
+  --status-completed-fg: #0b7d59;
+  --status-completed-bg: rgba(15, 157, 112, 0.14);
+  --status-cancelled-fg: #b3341f;
+  --status-cancelled-bg: rgba(214, 62, 38, 0.12);
+  --status-noshow-fg: #5c6067;
+  --status-noshow-bg: rgba(92, 96, 103, 0.12);
+
+  --shadow-sm: 0 1px 2px rgba(23, 24, 26, 0.04);
+  --shadow-card: 0 1px 2px rgba(23, 24, 26, 0.04), 0 8px 24px -12px rgba(23, 24, 26, 0.12);
+  --shadow-raised: 0 4px 12px rgba(23, 24, 26, 0.06), 0 16px 40px -16px rgba(23, 24, 26, 0.18);
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: var(--ink-950);
+    --surface: var(--ink-900);
+    --surface-raised: var(--ink-850);
+    --border-subtle: var(--ink-800);
+    --border-strong: var(--ink-700);
+    --text-primary: #f2f3f4;
+    --text-secondary: #a7adb6;
+    --text-tertiary: #767c86;
+
+    --accent: #9c85f2;
+    --accent-strong: #8367ee;
+    --accent-soft: rgba(156, 133, 242, 0.14);
+    --accent-soft-strong: rgba(156, 133, 242, 0.22);
+    --accent-contrast: #0c0a17;
+
+    --status-pending-fg: #e3ac4a;
+    --status-pending-bg: rgba(224, 167, 92, 0.14);
+    --status-confirmed-fg: #7fa2ff;
+    --status-confirmed-bg: rgba(93, 130, 255, 0.14);
+    --status-completed-fg: #22c98d;
+    --status-completed-bg: rgba(34, 201, 141, 0.14);
+    --status-cancelled-fg: #ef7a67;
+    --status-cancelled-bg: rgba(239, 122, 103, 0.14);
+    --status-noshow-fg: #a7adb6;
+    --status-noshow-bg: rgba(167, 173, 182, 0.12);
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+    --shadow-raised: 0 4px 12px rgba(0, 0, 0, 0.35), 0 20px 48px -16px rgba(0, 0, 0, 0.6);
+  }
+}
+
+@theme inline {
+  --color-background: var(--paper);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  border-color: var(--border-subtle);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--text-primary);
+  font-feature-settings: "ss01" 1, "cv11" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--accent-soft-strong);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    font-size: 0.875rem;
+    line-height: 1;
+    padding: 0.65rem 1.15rem;
+    transition: all 150ms ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-strong);
+  }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 0.5rem 0.75rem;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--border-subtle);
+    color: var(--text-primary);
+  }
+  .btn-danger-ghost {
+    background: transparent;
+    color: var(--status-cancelled-fg);
+    padding: 0.5rem 0.75rem;
+  }
+  .btn-danger-ghost:hover:not(:disabled) {
+    background: var(--status-cancelled-bg);
+  }
+  .btn-sm {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8125rem;
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.4rem;
+  }
+  .input,
+  .select {
+    width: 100%;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text-primary);
+    padding: 0.6rem 0.85rem;
+    font-size: 0.875rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .input::placeholder {
+    color: var(--text-tertiary);
+  }
+  .input:focus,
+  .select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+  }
+  .card-raised {
+    background: var(--surface-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-raised);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: var(--radius-pill);
+    padding: 0.25rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .badge-completed {
+    color: var(--status-completed-fg);
+    background: var(--status-completed-bg);
+  }
+  .badge-cancelled {
+    color: var(--status-cancelled-fg);
+    background: var(--status-cancelled-bg);
+  }
+  .badge-pending {
+    color: var(--status-pending-fg);
+    background: var(--status-pending-bg);
+  }
+  .badge-neutral {
+    color: var(--text-secondary);
+    background: var(--border-subtle);
+  }
+  .badge-accent {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.85rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 150ms ease;
+  }
+  .nav-link:hover {
+    background: var(--border-subtle);
+    color: var(--text-primary);
+  }
+  .nav-link[data-active="true"] {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+}

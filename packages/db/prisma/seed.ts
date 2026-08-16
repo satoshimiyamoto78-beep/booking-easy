@@ -200,7 +200,21 @@ async function main() {
     },
   });
 
+  const platformAdminEmail = process.env.PLATFORM_ADMIN_EMAIL ?? "founder@example.com";
+  const platformAdminPassword = process.env.PLATFORM_ADMIN_PASSWORD ?? "change-me-please";
+  const platformPasswordHash = await bcrypt.hash(platformAdminPassword, 10);
+
+  await prisma.platformAdmin.upsert({
+    where: { email: platformAdminEmail },
+    update: { passwordHash: platformPasswordHash },
+    create: {
+      email: platformAdminEmail,
+      passwordHash: platformPasswordHash,
+    },
+  });
+
   console.log(`Seeded database. Admin login: ${adminEmail} / ${adminPassword}`);
+  console.log(`Platform admin login: ${platformAdminEmail} / ${platformAdminPassword}`);
 }
 
 main()

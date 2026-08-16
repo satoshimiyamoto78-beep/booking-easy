@@ -46,7 +46,7 @@ export async function createBooking(
   const startDate = new Date(startsAt);
 
   const business = await getBusinessBySlug(businessSlug);
-  if (!business) {
+  if (!business || business.suspended) {
     return { error: "That business or team member is no longer available." };
   }
   const businessId = business.id;

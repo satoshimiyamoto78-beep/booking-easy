@@ -30,6 +30,17 @@ export default async function SlugLayout({
   const business = await getBusinessBySlug(slug);
   if (!business) notFound();
 
+  if (business.suspended) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
+        <h1 className="text-2xl font-semibold">{business.name} is temporarily unavailable</h1>
+        <p className="mt-2 max-w-sm text-sm text-neutral-500 dark:text-neutral-400">
+          Online booking for this business is currently paused. Please check back later.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex min-h-full flex-1 flex-col"
