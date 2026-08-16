@@ -212,4 +212,48 @@ body {
     background: var(--brand);
     color: var(--brand-contrast);
   }
+
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: var(--radius-pill);
+    padding: 0.25rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .badge-accent {
+    color: var(--brand);
+    background: color-mix(in srgb, var(--brand) 12%, var(--surface));
+  }
+
+  /* Checkbox / radio chip (plan picker, multi-select lists) */
+  .chip-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--border-subtle);
+    background: var(--surface);
+    padding: 0.7rem 1rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 150ms ease;
+  }
+  .chip-checkbox:hover {
+    border-color: color-mix(in srgb, var(--brand) 50%, var(--border-strong));
+  }
+  .chip-checkbox[data-selected="true"] {
+    border-color: var(--brand);
+    background: color-mix(in srgb, var(--brand) 6%, var(--surface));
+    color: var(--text-primary);
+  }
 }

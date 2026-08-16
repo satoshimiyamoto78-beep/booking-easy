@@ -55,9 +55,9 @@ model Business {
   brandColor String? @default("#0f9d70")
   logoUrl    String?
 
-  stripeCustomerId     String?  @unique
-  stripeSubscriptionId String?  @unique
-  stripePriceId        String?
+  dodoCustomerId       String?  @unique
+  dodoSubscriptionId   String?  @unique
+  dodoProductId        String?
   subscriptionTier     SubscriptionTier   @default(STARTER)
   subscriptionStatus   SubscriptionStatus @default(INCOMPLETE)
   currentPeriodEnd     DateTime?
