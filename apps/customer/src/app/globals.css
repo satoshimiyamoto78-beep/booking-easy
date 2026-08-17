@@ -234,6 +234,33 @@ body {
     background: color-mix(in srgb, var(--brand) 12%, var(--surface));
   }
 
+  /* Booking wizard footer actions: inline on desktop, pinned to the
+     viewport bottom on mobile so Back/Continue never require scrolling
+     past a long step's content. */
+  .booking-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 30;
+    padding: 0.875rem 1rem calc(0.875rem + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--surface) 96%, transparent);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border-subtle);
+  }
+  @media (min-width: 640px) {
+    .booking-actions {
+      position: static;
+      padding: 0;
+      background: transparent;
+      backdrop-filter: none;
+      border-top: none;
+    }
+  }
+
   /* Checkbox / radio chip (plan picker, multi-select lists) */
   .chip-checkbox {
     display: inline-flex;

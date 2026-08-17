@@ -23,6 +23,10 @@ export default async function ServicesPage({
     orderBy: [{ category: "asc" }, { sortOrder: "asc" }],
   });
 
+  const categoriesPresent = CATEGORIES.filter(
+    (category) => services.filter((s) => s.category === category).length > 0,
+  );
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20">
       <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Services</h1>
@@ -30,12 +34,25 @@ export default async function ServicesPage({
         Prices and durations below. Book online and choose your preferred team member.
       </p>
 
+      {categoriesPresent.length > 1 && (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {categoriesPresent.map((category) => (
+            <a key={category} href={`#${category}`} className="badge badge-accent">
+              {formatCategory(category)}
+              <span style={{ opacity: 0.7 }}>
+                {services.filter((s) => s.category === category).length}
+              </span>
+            </a>
+          ))}
+        </div>
+      )}
+
       {CATEGORIES.map((category) => {
         const categoryServices = services.filter((s) => s.category === category);
         if (categoryServices.length === 0) return null;
 
         return (
-          <div key={category} className="mt-14 first:mt-12">
+          <div key={category} id={category} className="mt-14 scroll-mt-24 first:mt-12">
             <h2 className="text-xl font-semibold tracking-tight">{formatCategory(category)}</h2>
             <div className="mt-5 grid gap-3">
               {categoryServices.map((service) => (

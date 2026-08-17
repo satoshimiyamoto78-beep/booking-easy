@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { createBooking } from "@/lib/actions/booking";
 import { formatCategory, formatDuration, formatPrice } from "@booking-easy/shared";
-import { Check } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Users, CalendarDays } from "lucide-react";
 
 type ServiceOption = {
   id: string;
@@ -20,15 +20,34 @@ type StaffOption = {
   serviceIds: string[];
 };
 
-type Slot = { startsAt: string; endsAt: string };
+type Slot = { startsAt: string; endsAt: string; staffId: string };
 
-const STEP_LABELS = ["Service", "Stylist", "Time", "Your info"];
+const STEP_LABELS = ["Service", "Professional", "Time", "Your info"];
+const ANY_STAFF = "any";
+const DATE_STRIP_DAYS = 14;
 
-function todayIso() {
-  const d = new Date();
+function toIso(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
     d.getDate(),
   ).padStart(2, "0")}`;
+}
+
+function todayIso() {
+  return toIso(new Date());
+}
+
+function groupSlots(slots: Slot[]) {
+  const groups: { label: string; slots: Slot[] }[] = [
+    { label: "Morning", slots: [] },
+    { label: "Afternoon", slots: [] },
+    { label: "Evening", slots: [] },
+  ];
+  for (const slot of slots) {
+    const hour = new Date(slot.startsAt).getHours();
+    const group = hour < 12 ? groups[0] : hour < 17 ? groups[1] : groups[2];
+    group.slots.push(slot);
+  }
+  return groups.filter((g) => g.slots.length > 0);
 }
 
 export function BookingWizard({
@@ -48,6 +67,13 @@ export function BookingWizard({
   const [date, setDate] = useState(todayIso());
   const [slotsResult, setSlotsResult] = useState<{ key: string; slots: Slot[] } | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+  const topRef = useRef<HTMLDivElement>(null);
+  const dateStripRef = useRef<HTMLDivElement>(null);
+  const hiddenDateInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [step]);
 
   const selectedService = useMemo(
     () => services.find((s) => s.id === serviceId) ?? null,
@@ -64,9 +90,15 @@ export function BookingWizard({
     [eligibleStaff, staffId],
   );
 
+  const resolvedStaffName = useMemo(() => {
+    if (!selectedSlot) return null;
+    return staff.find((s) => s.id === selectedSlot.staffId)?.name ?? null;
+  }, [staff, selectedSlot]);
+
   const slotsKey = `${serviceId ?? ""}|${staffId ?? ""}|${date}`;
   const slots = slotsResult?.key === slotsKey ? slotsResult.slots : [];
   const loadingSlots = step === 3 && Boolean(serviceId && staffId) && slotsResult?.key !== slotsKey;
+  const slotGroups = useMemo(() => groupSlots(slots), [slots]);
 
   useEffect(() => {
     if (step !== 3 || !serviceId || !staffId) return;
@@ -98,22 +130,75 @@ export function BookingWizard({
     return byCategory;
   }, [services]);
 
+  const dateStrip = useMemo(() => {
+    const days: { iso: string; weekday: string; day: number; isToday: boolean }[] = [];
+    const today = new Date();
+    for (let i = 0; i < DATE_STRIP_DAYS; i++) {
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+      days.push({
+        iso: toIso(d),
+        weekday: d.toLocaleDateString([], { weekday: "short" }),
+        day: d.getDate(),
+        isToday: i === 0,
+      });
+    }
+    return days;
+  }, []);
+
+  type SummaryItem = { step: 1 | 2 | 3; label: string; detail: string | null };
+  const summaryItems: SummaryItem[] = [];
+  if (selectedService) {
+    summaryItems.push({
+      step: 1,
+      label: selectedService.name,
+      detail: `${formatDuration(selectedService.durationMinutes)} · ${formatPrice(selectedService.priceCents)}`,
+    });
+  }
+  if (staffId) {
+    summaryItems.push({
+      step: 2,
+      label: staffId === ANY_STAFF ? "Any available professional" : (selectedStaff?.name ?? ""),
+      detail: null,
+    });
+  }
+  if (selectedSlot) {
+    summaryItems.push({
+      step: 3,
+      label: new Date(selectedSlot.startsAt).toLocaleString([], {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+      detail: resolvedStaffName && staffId === ANY_STAFF ? `with ${resolvedStaffName}` : null,
+    });
+  }
+
   return (
-    <div>
-      <ol className="mb-10 flex items-center gap-2 text-xs font-medium">
+    <div ref={topRef} className="scroll-mt-24 pb-28 sm:pb-0">
+      <ol className="mb-6 flex items-center gap-2 text-xs font-medium">
         {STEP_LABELS.map((label, i) => {
           const stepNum = i + 1;
           const stepState: "done" | "current" | "upcoming" =
             step > stepNum ? "done" : step === stepNum ? "current" : "upcoming";
+          const canJump = step > stepNum;
           return (
             <li
               key={label}
               className="flex items-center gap-2"
               style={{ color: stepState === "upcoming" ? "var(--text-tertiary)" : "var(--text-primary)" }}
             >
-              <span className="step-dot" data-state={stepState}>
+              <button
+                type="button"
+                disabled={!canJump}
+                onClick={() => canJump && setStep(stepNum as 1 | 2 | 3 | 4)}
+                className="step-dot"
+                data-state={stepState}
+                style={{ cursor: canJump ? "pointer" : "default" }}
+              >
                 {stepState === "done" ? <Check size={12} strokeWidth={3} /> : stepNum}
-              </span>
+              </button>
               <span className="hidden sm:inline">{label}</span>
               {i < STEP_LABELS.length - 1 && (
                 <span className="mx-1" style={{ color: "var(--border-strong)" }}>
@@ -124,6 +209,23 @@ export function BookingWizard({
           );
         })}
       </ol>
+
+      {summaryItems.length > 0 && (
+        <div className="mb-8 flex flex-wrap gap-2">
+          {summaryItems.map((item) => (
+            <button
+              key={item.step}
+              type="button"
+              onClick={() => setStep(item.step)}
+              className="badge badge-accent"
+              style={{ cursor: "pointer" }}
+            >
+              {item.label}
+              {item.detail && <span style={{ opacity: 0.7 }}>· {item.detail}</span>}
+            </button>
+          ))}
+        </div>
+      )}
 
       {step === 1 && (
         <div className="space-y-8">
@@ -158,7 +260,8 @@ export function BookingWizard({
             </div>
           ))}
 
-          <div className="flex justify-end">
+          <div className="booking-actions">
+            <span className="hidden sm:block" />
             <button
               type="button"
               disabled={!serviceId}
@@ -179,6 +282,30 @@ export function BookingWizard({
             </p>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
+              {eligibleStaff.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStaffId(ANY_STAFF);
+                    setSelectedSlot(null);
+                  }}
+                  data-selected={staffId === ANY_STAFF}
+                  className="option-card flex items-center gap-3 p-4"
+                >
+                  <span
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                    style={{ background: "color-mix(in srgb, var(--brand) 12%, var(--surface))" }}
+                  >
+                    <Users size={16} style={{ color: "var(--brand)" }} />
+                  </span>
+                  <span>
+                    <span className="block font-medium">Any available professional</span>
+                    <span className="block text-sm" style={{ color: "var(--text-tertiary)" }}>
+                      Fastest booking — we&apos;ll match you automatically
+                    </span>
+                  </span>
+                </button>
+              )}
               {eligibleStaff.map((member) => (
                 <button
                   key={member.id}
@@ -201,7 +328,7 @@ export function BookingWizard({
             </div>
           )}
 
-          <div className="flex justify-between">
+          <div className="booking-actions">
             <button type="button" onClick={() => setStep(1)} className="btn btn-secondary">
               Back
             </button>
@@ -217,24 +344,79 @@ export function BookingWizard({
         </div>
       )}
 
-      {step === 3 && selectedStaff && (
+      {step === 3 && staffId && (
         <div className="space-y-6">
           <div>
-            <label htmlFor="date" className="field-label">
-              Date
-            </label>
-            <input
-              id="date"
-              type="date"
-              min={todayIso()}
-              value={date}
-              onChange={(e) => {
-                setDate(e.target.value);
-                setSelectedSlot(null);
-              }}
-              className="input"
-              style={{ maxWidth: 220 }}
-            />
+            <div className="flex items-center justify-between">
+              <p className="field-label mb-0">Date</p>
+              <button
+                type="button"
+                onClick={() => hiddenDateInputRef.current?.showPicker?.()}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold"
+                style={{ color: "var(--brand)" }}
+              >
+                <CalendarDays size={13} />
+                Pick a date
+              </button>
+              <input
+                ref={hiddenDateInputRef}
+                type="date"
+                min={todayIso()}
+                value={date}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  setSelectedSlot(null);
+                }}
+                className="sr-only"
+                tabIndex={-1}
+                aria-hidden
+              />
+            </div>
+            <div className="mt-3 flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => dateStripRef.current?.scrollBy({ left: -200, behavior: "smooth" })}
+                className="btn-ghost hidden shrink-0 rounded-full p-1.5 sm:flex"
+                aria-label="Scroll earlier"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <div
+                ref={dateStripRef}
+                className="flex flex-1 gap-2 overflow-x-auto scroll-smooth pb-1"
+                style={{ scrollbarWidth: "none" }}
+              >
+                {dateStrip.map((d) => (
+                  <button
+                    key={d.iso}
+                    type="button"
+                    onClick={() => {
+                      setDate(d.iso);
+                      setSelectedSlot(null);
+                    }}
+                    data-selected={date === d.iso}
+                    className="option-card flex shrink-0 flex-col items-center px-3.5 py-2.5"
+                    style={{ minWidth: 58 }}
+                  >
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wide"
+                      style={{ color: "var(--text-tertiary)" }}
+                    >
+                      {d.isToday ? "Today" : d.weekday}
+                    </span>
+                    <span className="mt-0.5 text-base font-semibold">{d.day}</span>
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => dateStripRef.current?.scrollBy({ left: 200, behavior: "smooth" })}
+                className="btn-ghost hidden shrink-0 rounded-full p-1.5 sm:flex"
+                aria-label="Scroll later"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
 
           <div>
@@ -248,31 +430,43 @@ export function BookingWizard({
                 No openings that day. Try another date.
               </p>
             ) : (
-              <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {slots.map((slot) => {
-                  const label = new Date(slot.startsAt).toLocaleTimeString([], {
-                    hour: "numeric",
-                    minute: "2-digit",
-                  });
-                  const isSelected = selectedSlot?.startsAt === slot.startsAt;
-                  return (
-                    <button
-                      key={slot.startsAt}
-                      type="button"
-                      onClick={() => setSelectedSlot(slot)}
-                      data-selected={isSelected}
-                      className="option-card px-3 py-2.5 text-center text-sm font-medium"
-                      style={isSelected ? { background: "var(--brand)", color: "var(--brand-contrast)" } : undefined}
+              <div className="mt-3 space-y-4">
+                {slotGroups.map((group) => (
+                  <div key={group.label}>
+                    <p
+                      className="mb-2 text-xs font-semibold uppercase tracking-wider"
+                      style={{ color: "var(--text-tertiary)" }}
                     >
-                      {label}
-                    </button>
-                  );
-                })}
+                      {group.label}
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                      {group.slots.map((slot) => {
+                        const label = new Date(slot.startsAt).toLocaleTimeString([], {
+                          hour: "numeric",
+                          minute: "2-digit",
+                        });
+                        const isSelected = selectedSlot?.startsAt === slot.startsAt;
+                        return (
+                          <button
+                            key={slot.startsAt}
+                            type="button"
+                            onClick={() => setSelectedSlot(slot)}
+                            data-selected={isSelected}
+                            className="option-card px-3 py-2.5 text-center text-sm font-medium"
+                            style={isSelected ? { background: "var(--brand)", color: "var(--brand-contrast)" } : undefined}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
-          <div className="flex justify-between">
+          <div className="booking-actions">
             <button type="button" onClick={() => setStep(2)} className="btn btn-secondary">
               Back
             </button>
@@ -288,17 +482,17 @@ export function BookingWizard({
         </div>
       )}
 
-      {step === 4 && selectedService && selectedStaff && selectedSlot && (
+      {step === 4 && selectedService && selectedSlot && (
         <form action={formAction} className="space-y-6">
           <input type="hidden" name="businessSlug" value={businessSlug} />
           <input type="hidden" name="serviceId" value={selectedService.id} />
-          <input type="hidden" name="staffId" value={selectedStaff.id} />
+          <input type="hidden" name="staffId" value={selectedSlot.staffId} />
           <input type="hidden" name="startsAt" value={selectedSlot.startsAt} />
 
           <div className="card p-4 text-sm">
             <p className="font-medium">{selectedService.name}</p>
             <p style={{ color: "var(--text-tertiary)" }}>
-              with {selectedStaff.name} ·{" "}
+              with {resolvedStaffName ?? "your specialist"} ·{" "}
               {new Date(selectedSlot.startsAt).toLocaleString([], {
                 weekday: "short",
                 month: "short",
@@ -342,7 +536,7 @@ export function BookingWizard({
             </p>
           )}
 
-          <div className="flex justify-between">
+          <div className="booking-actions">
             <button type="button" onClick={() => setStep(3)} className="btn btn-secondary">
               Back
             </button>

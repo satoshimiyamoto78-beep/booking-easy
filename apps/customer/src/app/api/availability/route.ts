@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAvailableSlots } from "@/lib/availability";
+import { prisma } from "@booking-easy/db";
+import { getAvailableSlots, getAvailableSlotsAnyStaff } from "@/lib/availability";
 import { getBusinessBySlug } from "@/lib/business";
 
 export async function GET(request: NextRequest) {
@@ -21,12 +22,36 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Business not found." }, { status: 404 });
   }
 
+  if (staffId === "any") {
+    const eligibleStaff = await prisma.staff.findMany({
+      where: { businessId: business.id, active: true, services: { some: { serviceId } } },
+      select: { id: true },
+      orderBy: { name: "asc" },
+    });
+
+    const slots = await getAvailableSlotsAnyStaff({
+      businessId: business.id,
+      serviceId,
+      staffIds: eligibleStaff.map((s) => s.id),
+      date,
+    });
+
+    return NextResponse.json({
+      slots: slots.map((s) => ({
+        startsAt: s.startsAt.toISOString(),
+        endsAt: s.endsAt.toISOString(),
+        staffId: s.staffId,
+      })),
+    });
+  }
+
   const slots = await getAvailableSlots({ businessId: business.id, serviceId, staffId, date });
 
   return NextResponse.json({
     slots: slots.map((s) => ({
       startsAt: s.startsAt.toISOString(),
       endsAt: s.endsAt.toISOString(),
+      staffId,
     })),
   });
 }

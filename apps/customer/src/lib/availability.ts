@@ -91,6 +91,40 @@ export async function getAvailableSlots(params: {
   return slots.sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
 }
 
+/**
+ * Merges availability across every staff member eligible for a service, for
+ * the "any available professional" option. Each returned slot is tagged with
+ * the first eligible staff member (in `staffIds` order) who is free for it,
+ * so the caller can submit a concrete staffId without the customer ever
+ * having to pick one.
+ */
+export async function getAvailableSlotsAnyStaff(params: {
+  businessId: string;
+  serviceId: string;
+  staffIds: string[];
+  date: string;
+}): Promise<(Slot & { staffId: string })[]> {
+  const { businessId, serviceId, staffIds, date } = params;
+
+  const perStaff = await Promise.all(
+    staffIds.map((staffId) =>
+      getAvailableSlots({ businessId, serviceId, staffId, date }).then((slots) => ({ staffId, slots })),
+    ),
+  );
+
+  const merged = new Map<string, Slot & { staffId: string }>();
+  for (const { staffId, slots } of perStaff) {
+    for (const slot of slots) {
+      const key = slot.startsAt.toISOString();
+      if (!merged.has(key)) {
+        merged.set(key, { ...slot, staffId });
+      }
+    }
+  }
+
+  return [...merged.values()].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+}
+
 export async function isSlotAvailable(params: {
   businessId: string;
   serviceId: string;
