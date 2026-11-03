@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Stand-alone Vite app with its own tooling.
+    "apps/perfume/**",
   ]),
 ]);
 

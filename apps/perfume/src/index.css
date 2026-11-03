@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: "Bodoni Moda", "Didot", "Times New Roman", serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-soft: var(--soft);
+  --color-accent: var(--accent);
+  --color-inverse: var(--inverse);
+  --color-on-inverse: var(--on-inverse);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+}
+
+:root {
+  --ink: #111111;
+  --ink-2: #2b2a28;
+  --muted: #8a8580;
+  --line: #e8e4de;
+  --paper: #f4f2ee;
+  --card: #ffffff;
+  --soft: #f7f5f1;
+  --accent: #b8925a;
+  --inverse: #121212;
+  --on-inverse: #ffffff;
+  --ok: #3f8f5f;
+  --warn: #c58a1a;
+  --bad: #c2483d;
+  color-scheme: light;
+}
+
+.dark {
+  --ink: #f3efe8;
+  --ink-2: #d9d3c9;
+  --muted: #8f8a83;
+  --line: #2a2826;
+  --paper: #0d0c0b;
+  --card: #171615;
+  --soft: #1e1d1b;
+  --inverse: #f3efe8;
+  --on-inverse: #121212;
+  --ok: #6cc08b;
+  --warn: #e0ad4a;
+  --bad: #e2766b;
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+.fade {
+  animation: fade 0.25s ease both;
+}
+@keyframes sheet {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+.sheet {
+  animation: sheet 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .fade,
+  .sheet {
+    animation: none;
+  }
+}
+
+input[type="number"]::-webkit-inner-spin-button {
+  opacity: 0.4;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}
