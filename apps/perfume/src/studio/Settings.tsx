@@ -6,6 +6,8 @@ import { downloadFile, money } from "../lib/format";
 import type { DB, PaymentMethod, Settings as S } from "../lib/types";
 import { PAYMENT_LABEL } from "../shop/Bag";
 import { PageHead } from "./StudioLayout";
+import { Logo } from "../components/Logo";
+import defaultLogo from "../assets/loris-logo.png?inline";
 
 type Section = "brand" | "pricing" | "delivery" | "payments" | "inventory" | "orders" | "promos" | "appearance" | "security" | "data";
 
@@ -79,7 +81,7 @@ export function Settings() {
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <Card className="relative h-fit overflow-hidden p-6 text-center">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-accent/20 to-transparent" />
-          <div className="relative mx-auto grid size-20 place-items-center rounded-full border-4 border-card bg-inverse font-display text-3xl text-on-inverse shadow-lg">{s.brandName.charAt(0)}</div>
+          <div className="relative mx-auto flex h-24 items-center justify-center rounded-2xl border border-line bg-card px-6"><Logo className="h-14" /></div>
           <p className="relative mt-4 font-display text-2xl">{s.brandName}</p>
           <p className="relative mt-1 text-[14px] text-muted">{s.tagline}</p>
           <div className="mt-5 grid grid-cols-3 divide-x divide-line rounded-2xl bg-soft py-3 text-center">
@@ -138,9 +140,10 @@ export function Settings() {
       >
         {open === "brand" && (
           <div className="space-y-3">
-            <Field label="Brand name">
+            <Field label="Brand name" hint="Used in page titles, labels on bottles and order messages">
               <Input value={draft.brandName} onChange={(e) => d("brandName", e.target.value)} />
             </Field>
+            <LogoField value={draft.logo ?? ""} onChange={(v) => d("logo", v)} />
             <Field label="Tagline">
               <Input value={draft.tagline} onChange={(e) => d("tagline", e.target.value)} />
             </Field>
@@ -420,5 +423,39 @@ function Action({ icon, title, sub, onClick, danger }: { icon: ReactNode; title:
       </span>
       <I.chevR size={16} className="text-muted" />
     </button>
+  );
+}
+
+function LogoField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { toast } = useStore();
+  const ref = useRef<HTMLInputElement>(null);
+  const pick = (f?: File) => {
+    if (!f) return;
+    if (f.size > 1e6) return toast("Please use a logo under 1 MB (PNG or SVG with a transparent background).", "error");
+    const r = new FileReader();
+    r.onload = () => onChange(String(r.result));
+    r.readAsDataURL(f);
+  };
+  return (
+    <div>
+      <p className="mb-1.5 text-[13px] font-medium text-ink-2">Logo</p>
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-line-2 p-3">
+        <div className="flex h-14 min-w-28 items-center justify-center rounded-lg bg-soft px-3">
+          <img src={value || defaultLogo} alt="Logo preview" className="h-10 w-auto dark:invert" />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="soft" onClick={() => ref.current?.click()}>
+            <I.upload size={14} /> Replace
+          </Button>
+          {value && (
+            <Button size="sm" variant="ghost" onClick={() => onChange("")}>
+              Use Loris logo
+            </Button>
+          )}
+        </div>
+        <input ref={ref} type="file" accept="image/png,image/svg+xml,image/webp" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+      </div>
+      <p className="mt-1.5 text-[12px] text-muted">A one-colour dark logo on a transparent background works best; it turns white on dark screens automatically.</p>
+    </div>
   );
 }

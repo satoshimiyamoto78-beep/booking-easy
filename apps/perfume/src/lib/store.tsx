@@ -26,6 +26,7 @@ function load(): DB {
       const db = JSON.parse(raw) as DB;
       if (db && db.version === 1 && Array.isArray(db.products)) {
         db.settings = { ...defaultSettings, ...db.settings, payments: { ...defaultSettings.payments, ...db.settings?.payments } };
+        if (db.settings.brandName === "Loris Perfume") db.settings.brandName = "Loris Parfum";
         db.cart ??= [];
         db.wishlist ??= [];
         db.myOrders ??= [];

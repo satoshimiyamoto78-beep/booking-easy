@@ -1,4 +1,4 @@
-# Maison — Perfume Stock & Boutique App
+# Loris Parfum — Shop & Stock Management App
 
 A luxury web app for a perfume house: a customer-facing **boutique** (catalogue,
 product pages, bag, checkout, order tracking) and a staff **Studio** to manage

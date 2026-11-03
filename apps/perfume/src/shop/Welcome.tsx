@@ -2,12 +2,12 @@ import { Bottle } from "../components/Bottle";
 import { I } from "../components/icons";
 import { useStore } from "../lib/store";
 import { navigate } from "../lib/router";
+import { Logo } from "../components/Logo";
 
 export function Welcome() {
   const { db, updateSettings } = useStore();
   const s = db.settings;
   const hero = db.products.filter((p) => p.status === "active").slice(0, 3);
-  const [first, ...rest] = s.brandName.split(" ");
   const go = (to: string) => {
     updateSettings({ onboarded: true });
     navigate(to);
@@ -16,10 +16,7 @@ export function Welcome() {
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-[#121110] text-[#f4f1ea]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_75%_25%,rgba(201,164,107,.28),transparent_55%),radial-gradient(ellipse_at_0%_100%,rgba(110,64,38,.4),transparent_55%)]" />
       <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-5 pt-6 md:px-10">
-        <span className="inline-flex items-baseline gap-2">
-          <span className="font-display text-[28px] font-bold tracking-[.14em] uppercase">{first}</span>
-          <span className="text-[11px] font-semibold tracking-[.24em] text-white/55 uppercase">{rest.join(" ")}</span>
-        </span>
+        <Logo onDark className="h-11 md:h-12" />
         <button onClick={() => go("/studio")} className="h-10 rounded-full border-[1.5px] border-white/30 px-4 text-[13px] font-semibold text-white/80 transition-colors hover:border-white hover:text-white">
           Staff Studio
         </button>

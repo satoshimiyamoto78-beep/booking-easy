@@ -111,6 +111,8 @@ export interface Order {
 
 export interface Settings {
   brandName: string;
+  /** Optional uploaded logo (data URL). Empty = bundled Loris Parfum logo. */
+  logo?: string;
   tagline: string;
   currency: string;
   locale: string;

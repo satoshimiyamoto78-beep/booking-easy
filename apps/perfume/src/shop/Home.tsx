@@ -4,6 +4,7 @@ import { LinkArrow, SectionHead } from "../components/ui";
 import { useStore } from "../lib/store";
 import { money } from "../lib/format";
 import { navigate } from "../lib/router";
+import { Logo } from "../components/Logo";
 import { ProductCard, visibleProducts } from "./ProductCard";
 
 export function Home() {
@@ -133,8 +134,8 @@ export function Home() {
         })}
       </section>
 
-      <footer className="flex flex-col items-center gap-1 border-t border-line py-10 text-center">
-        <p className="font-display text-[28px] font-bold tracking-[.14em] uppercase">{s.brandName.split(" ")[0]}</p>
+      <footer className="flex flex-col items-center gap-3 border-t border-line py-10 text-center">
+        <Logo className="h-14" />
         <p className="text-[14px] text-muted">{s.tagline}</p>
       </footer>
     </div>

@@ -2,12 +2,13 @@ import type { DB, Family, Collection, Product, Order, StockMovement, Settings, O
 import { r2 } from "./format";
 
 /**
- * Defaults for Loris Perfume's shop in Tajikistan.
+ * Defaults for the Loris Parfum shop in Tajikistan.
  * Prices are in somoni (TJS) and include VAT (14%), as is usual for retail.
  * Everything here is editable in Studio → Settings.
  */
 export const defaultSettings: Settings = {
-  brandName: "Loris Perfume",
+  brandName: "Loris Parfum",
+  logo: "",
   tagline: "Turkish perfumery, now in Dushanbe.",
   currency: "TJS",
   locale: "en-GB",

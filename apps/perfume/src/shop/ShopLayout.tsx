@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { I } from "../components/icons";
 import { cx } from "../components/ui";
 import { useStore } from "../lib/store";
+import { Logo } from "../components/Logo";
 import { navigate } from "../lib/router";
 
 const tabs = [
@@ -13,14 +14,7 @@ const tabs = [
 ];
 
 export function Wordmark({ className }: { className?: string }) {
-  const { db } = useStore();
-  const [first, ...rest] = db.settings.brandName.split(" ");
-  return (
-    <span className={cx("inline-flex items-baseline gap-2 leading-none", className)}>
-      <span className="font-display text-[26px] font-bold tracking-[.14em] uppercase">{first}</span>
-      {rest.length > 0 && <span className="text-[11px] font-semibold tracking-[.24em] text-muted uppercase">{rest.join(" ")}</span>}
-    </span>
-  );
+  return <Logo className={cx("h-9 md:h-10", className)} />;
 }
 
 export function ShopLayout({ path, children, hideNav }: { path: string; children: ReactNode; hideNav?: boolean }) {
