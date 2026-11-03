@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Bottle } from "../components/Bottle";
 import { I } from "../components/icons";
-import { Badge, Button, Card, Chip, Empty, Field, Input, Select, Stepper, Textarea, cx } from "../components/ui";
+import { ask, Badge, Button, Card, Chip, Empty, Field, Input, Select, Stepper, Textarea, cx } from "../components/ui";
 import { findVariant, quote, useStore } from "../lib/store";
 import { dateTime, downloadFile, money, relTime, toCSV } from "../lib/format";
 import { navigate } from "../lib/router";
@@ -162,9 +162,6 @@ export function OrderDetail({ id }: { id: string }) {
             </Badge>
           </h1>
         </div>
-        <Button variant="outline" onClick={() => window.print()}>
-          <I.print size={16} /> Invoice
-        </Button>
         {next && o.status !== "cancelled" && (
           <Button
             onClick={() => {
@@ -297,8 +294,8 @@ export function OrderDetail({ id }: { id: string }) {
               <Button
                 variant="danger"
                 className="w-full"
-                onClick={() => {
-                  if (confirm(`Cancel ${o.number}? Items go back into stock.`)) {
+                onClick={async () => {
+                  if (await ask(`Cancel ${o.number}? Items go back into stock.`)) {
                     setOrderStatus(o.id, "cancelled");
                     toast("Order cancelled — stock restored");
                   }
@@ -311,8 +308,8 @@ export function OrderDetail({ id }: { id: string }) {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => {
-                  if (confirm("Return all items to stock and mark refunded?")) {
+                onClick={async () => {
+                  if (await ask("Return all items to stock and mark refunded?")) {
                     returnItems(o.id);
                     toast("Return processed", "success");
                   }

@@ -51,6 +51,8 @@ export function downloadFile(name: string, content: string, type = "text/plain")
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  // Sandboxed/embedded viewers block downloads; also put the data on the clipboard.
+  navigator.clipboard?.writeText(content).catch(() => undefined);
 }
 
 export function toCSV(rows: (string | number | boolean | undefined | null)[][]) {

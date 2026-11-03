@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Bottle } from "../components/Bottle";
 import { I } from "../components/icons";
-import { Badge, Button, Card, Chip, Empty, Field, Input, Select, Textarea, Toggle, cx } from "../components/ui";
+import { ask, Badge, Button, Card, Chip, Empty, Field, Input, Select, Textarea, Toggle, cx } from "../components/ui";
 import { minPrice, stockState, totalStock, useStore } from "../lib/store";
 import { money, splitList, uid } from "../lib/format";
 import { navigate } from "../lib/router";
@@ -285,8 +285,8 @@ export function ProductEditor({ id }: { id: string }) {
               </Button>
               <Button
                 variant="danger"
-                onClick={() => {
-                  if (confirm(`Delete “${p.name}”? Stock history is kept, but the product is removed. Consider archiving instead.`)) {
+                onClick={async () => {
+                  if (await ask(`Delete “${p.name}”? Stock history is kept, but the product is removed. Consider archiving instead.`)) {
                     deleteProduct(p.id);
                     toast("Product deleted");
                     navigate("/studio/products");

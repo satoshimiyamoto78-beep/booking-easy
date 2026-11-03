@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
 import { I } from "../components/icons";
-import { Button, Card, Field, Input, Modal, Select, Toggle, cx } from "../components/ui";
+import { ask, Button, Card, Field, Input, Modal, Select, Toggle, cx } from "../components/ui";
 import { useStore } from "../lib/store";
 import { downloadFile, money } from "../lib/format";
 import type { DB, PaymentMethod, Settings as S } from "../lib/types";
@@ -298,8 +298,8 @@ function ApplyReorder({ value }: { value: number }) {
   return (
     <button
       className="text-xs font-semibold text-accent hover:underline"
-      onClick={() => {
-        if (!confirm(`Set the reorder point of every size to ${value}?`)) return;
+      onClick={async () => {
+        if (!await ask(`Set the reorder point of every size to ${value}?`)) return;
         for (const p of db.products) saveProduct({ ...p, variants: p.variants.map((v) => ({ ...v, reorderPoint: value })) });
         toast("Reorder points updated", "success");
       }}
@@ -348,11 +348,11 @@ function DataModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const onImport = (f?: File) => {
     if (!f) return;
     const r = new FileReader();
-    r.onload = () => {
+    r.onload = async () => {
       try {
         const data = JSON.parse(String(r.result)) as DB;
         if (data.version !== 1 || !Array.isArray(data.products) || !data.settings) throw new Error("bad");
-        if (!confirm(`Replace all current data with this backup (${data.products.length} products, ${data.orders.length} orders)?`)) return;
+        if (!(await ask(`Replace all current data with this backup (${data.products.length} products, ${data.orders.length} orders)?`))) return;
         importDB({ ...data, cart: data.cart ?? [], wishlist: data.wishlist ?? [], myOrders: data.myOrders ?? [] });
         toast("Backup restored", "success");
         onClose();
@@ -371,7 +371,7 @@ function DataModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           sub="Products, stock, orders and settings as JSON"
           onClick={() => {
             downloadFile(`maison-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(db, null, 2), "application/json");
-            toast("Backup downloaded", "success");
+            toast("Backup downloaded and copied to clipboard", "success");
           }}
         />
         <Action icon={<I.upload size={18} />} title="Restore from backup" sub="Replaces everything on this device" onClick={() => fileRef.current?.click()} />
@@ -383,8 +383,8 @@ function DataModal({ open, onClose }: { open: boolean; onClose: () => void }) {
             icon={<I.history size={18} />}
             title="Reload demo catalogue"
             sub="Replace data with the sample house"
-            onClick={() => {
-              if (confirm("Replace all data with the demo catalogue?")) {
+            onClick={async () => {
+              if (await ask("Replace all data with the demo catalogue?")) {
                 resetDemo();
                 toast("Demo data loaded");
                 onClose();
@@ -396,8 +396,8 @@ function DataModal({ open, onClose }: { open: boolean; onClose: () => void }) {
             icon={<I.trash size={18} />}
             title="Start fresh"
             sub="Remove all products, orders and stock history (settings kept)"
-            onClick={() => {
-              if (confirm("Delete ALL products, orders and stock history? Download a backup first if unsure.")) {
+            onClick={async () => {
+              if (await ask("Delete ALL products, orders and stock history? Download a backup first if unsure.")) {
                 startEmpty();
                 toast("Clean slate — add your first product");
                 onClose();

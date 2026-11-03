@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { I } from "../components/icons";
-import { Button, Card, Field, Input, Modal, Textarea } from "../components/ui";
+import { ask, Button, Card, Field, Input, Modal, Textarea } from "../components/ui";
 import { useStore } from "../lib/store";
 import { uid } from "../lib/format";
 import { navigate } from "../lib/router";
@@ -46,7 +46,7 @@ export function Categories() {
               n={count("collectionId", c.id)}
               onOpen={() => navigate(`/shop?collection=${c.id}`)}
               onEdit={() => setEdit({ kind: "collection", item: { ...c } })}
-              onDelete={() => confirm(`Delete collection “${c.name}”? Products stay but lose this collection.`) && deleteCollection(c.id)}
+              onDelete={async () => (await ask(`Delete collection “${c.name}”? Products stay but lose this collection.`)) && deleteCollection(c.id)}
             />
           ))}
           {db.collections.length === 0 && <p className="py-6 text-center text-sm text-muted">No collections yet.</p>}
@@ -71,7 +71,7 @@ export function Categories() {
               n={count("familyId", f.id)}
               onOpen={() => navigate(`/shop?family=${f.id}`)}
               onEdit={() => setEdit({ kind: "family", item: { ...f } })}
-              onDelete={() => confirm(`Delete family “${f.name}”?`) && deleteFamily(f.id)}
+              onDelete={async () => (await ask(`Delete family “${f.name}”?`)) && deleteFamily(f.id)}
             />
           ))}
         </Card>

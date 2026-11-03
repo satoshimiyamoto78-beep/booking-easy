@@ -1,4 +1,4 @@
-import { useEffect, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
+import { useEffect, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
 import { I } from "./icons";
 import { useStore } from "../lib/store";
 
@@ -213,6 +213,43 @@ export function SectionHead({ title, action }: { title: string; action?: ReactNo
   );
 }
 
-export function useConfirm() {
-  return (msg: string) => window.confirm(msg);
+type Ask = { msg: string; resolve: (ok: boolean) => void };
+let pushAsk: ((a: Ask) => void) | null = null;
+
+/** In-page replacement for window.confirm (which embedded/sandboxed viewers block). */
+export function ask(msg: string): Promise<boolean> {
+  return new Promise((resolve) => (pushAsk ? pushAsk({ msg, resolve }) : resolve(false)));
+}
+
+export function ConfirmHost() {
+  const [q, setQ] = useState<Ask | null>(null);
+  useEffect(() => {
+    pushAsk = setQ;
+    return () => {
+      pushAsk = null;
+    };
+  }, []);
+  const done = (ok: boolean) => {
+    q?.resolve(ok);
+    setQ(null);
+  };
+  return (
+    <Modal
+      open={!!q}
+      onClose={() => done(false)}
+      title="Please confirm"
+      footer={
+        <>
+          <Button variant="outline" className="flex-1" onClick={() => done(false)}>
+            Cancel
+          </Button>
+          <Button className="flex-1" onClick={() => done(true)} autoFocus>
+            Confirm
+          </Button>
+        </>
+      }
+    >
+      <p className="text-sm leading-relaxed text-ink-2">{q?.msg}</p>
+    </Modal>
+  );
 }
