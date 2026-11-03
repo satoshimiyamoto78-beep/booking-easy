@@ -69,10 +69,10 @@ export function Bottle({ product, brand = "", className = "", label = true }: Pr
       {label && (
         <g>
           <rect x="70" y={b.labelY - 16} width="60" height="34" rx="2" fill="#fbf8f2" fillOpacity=".92" stroke="#000" strokeOpacity=".15" strokeWidth=".6" />
-          <text x="100" y={b.labelY - 2} textAnchor="middle" fontFamily="'Bodoni Moda', serif" fontSize={wordSize} letterSpacing={word.length > 7 ? 0.6 : 1.2} fill="#111">
+          <text x="100" y={b.labelY - 2} textAnchor="middle" fontFamily="'Cormorant Garamond', serif" fontWeight="700" fontSize={wordSize} letterSpacing={word.length > 7 ? 0.6 : 1.2} fill="#111">
             {word}
           </text>
-          <text x="100" y={b.labelY + 9} textAnchor="middle" fontFamily="Manrope, sans-serif" fontSize="4" letterSpacing="1.4" fill="#555">
+          <text x="100" y={b.labelY + 9} textAnchor="middle" fontFamily="Onest, sans-serif" fontSize="4" letterSpacing="1.4" fill="#555">
             {brand.toUpperCase().slice(0, 18)}
           </text>
         </g>

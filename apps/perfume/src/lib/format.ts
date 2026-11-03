@@ -3,16 +3,23 @@ import type { Settings } from "./types";
 export const uid = (p = "") =>
   p + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
 
+export const r2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+
+const PREFIX: Record<string, string> = { USD: "$", EUR: "€", GBP: "£" };
+
+/** 1 250 TJS · 1 250,50 TJS · $1,250 — whole amounts drop the decimals. */
 export function money(n: number, s: Pick<Settings, "currency" | "locale">) {
+  const v = r2(n);
+  const digits = Number.isInteger(v) ? 0 : 2;
+  let num: string;
   try {
-    return new Intl.NumberFormat(s.locale || "en-US", {
-      style: "currency",
-      currency: s.currency || "USD",
-      maximumFractionDigits: 2,
-    }).format(n);
+    num = new Intl.NumberFormat(s.locale || "en-GB", { minimumFractionDigits: digits, maximumFractionDigits: 2 }).format(Math.abs(v));
   } catch {
-    return `${s.currency} ${n.toFixed(2)}`;
+    num = Math.abs(v).toFixed(digits);
   }
+  const sign = v < 0 ? "−" : "";
+  const p = PREFIX[s.currency];
+  return p ? `${sign}${p}${num}` : `${sign}${num} ${s.currency || ""}`.trim();
 }
 
 export function dateTime(iso: string, locale = "en-US") {

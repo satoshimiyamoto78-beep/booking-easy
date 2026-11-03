@@ -104,6 +104,7 @@ export interface Order {
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
   note: string;
+  returned?: boolean;
   createdAt: string;
   history: { status: OrderStatus | "note" | "payment"; at: string; text?: string }[];
 }

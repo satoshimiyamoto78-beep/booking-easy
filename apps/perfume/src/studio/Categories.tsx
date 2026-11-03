@@ -26,12 +26,12 @@ export function Categories() {
   return (
     <div className="rise">
       <PageHead eyebrow="Organise" title="Categories" />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="p-5">
-          <div className="mb-3 flex items-center justify-between">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+        <Card className="min-w-0 p-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-[15px] font-bold">Collections</h2>
-              <p className="text-xs text-muted">Product lines shown on the storefront</p>
+              <p className="text-[13px] text-muted">Product lines shown on the storefront</p>
             </div>
             <Button size="sm" onClick={() => setEdit({ kind: "collection", item: { id: uid("col-"), name: "", description: "" } })}>
               <I.plus size={14} /> Add
@@ -49,14 +49,14 @@ export function Categories() {
               onDelete={async () => (await ask(`Delete collection “${c.name}”? Products stay but lose this collection.`)) && deleteCollection(c.id)}
             />
           ))}
-          {db.collections.length === 0 && <p className="py-6 text-center text-sm text-muted">No collections yet.</p>}
+          {db.collections.length === 0 && <p className="py-6 text-center text-[14px] text-muted">No collections yet.</p>}
         </Card>
 
-        <Card className="p-5">
-          <div className="mb-3 flex items-center justify-between">
+        <Card className="min-w-0 p-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-[15px] font-bold">Olfactory families</h2>
-              <p className="text-xs text-muted">Used for filters, chips and stock reports</p>
+              <p className="text-[13px] text-muted">Used for filters, chips and stock reports</p>
             </div>
             <Button size="sm" onClick={() => setEdit({ kind: "family", item: { id: uid("fam-"), name: "", description: "", color: "#C9A46B" } })}>
               <I.plus size={14} /> Add
@@ -104,7 +104,7 @@ export function Categories() {
               <Field label="Colour">
                 <div className="flex items-center gap-3">
                   <input type="color" value={edit.item.color} onChange={(e) => setEdit({ kind: "family", item: { ...edit.item, color: e.target.value } })} className="h-11 w-16 cursor-pointer rounded-xl border border-line bg-transparent" />
-                  <span className="font-mono text-xs text-muted">{edit.item.color}</span>
+                  <span className="font-mono text-[13px] text-muted">{edit.item.color}</span>
                 </div>
               </Field>
             )}
@@ -117,21 +117,22 @@ export function Categories() {
 
 function Row({ swatch, title, sub, n, onOpen, onEdit, onDelete }: { swatch: React.ReactNode; title: string; sub: string; n: number; onOpen: () => void; onEdit: () => void; onDelete: () => void }) {
   return (
-    <div className="flex items-center gap-3 border-b border-line py-3 last:border-0">
-      {swatch}
+    <div className="flex items-center gap-3 border-b border-line py-3.5 last:border-0">
+      <span className="shrink-0">{swatch}</span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold">{title}</p>
-        <p className="truncate text-xs text-muted">{sub || "—"}</p>
+        <p className="truncate text-[15px] font-semibold">{title}</p>
+        <p className="truncate text-[13px] text-muted">
+          {n} {n === 1 ? "product" : "products"} · {sub || "—"}
+        </p>
       </div>
-      <span className="text-xs text-muted">{n} products</span>
-      <div className="flex">
-        <button aria-label="View in store" onClick={onOpen} className="grid size-8 place-items-center rounded-full text-muted hover:bg-soft hover:text-ink">
+      <div className="flex shrink-0">
+        <button aria-label="View in store" onClick={onOpen} className="grid size-10 place-items-center rounded-full text-muted hover:bg-soft hover:text-ink">
           <I.store size={15} />
         </button>
-        <button aria-label="Edit" onClick={onEdit} className="grid size-8 place-items-center rounded-full text-muted hover:bg-soft hover:text-ink">
+        <button aria-label="Edit" onClick={onEdit} className="grid size-10 place-items-center rounded-full text-muted hover:bg-soft hover:text-ink">
           <I.edit size={15} />
         </button>
-        <button aria-label="Delete" onClick={onDelete} className="grid size-8 place-items-center rounded-full text-muted hover:bg-bad/10 hover:text-bad">
+        <button aria-label="Delete" onClick={onDelete} className="grid size-10 place-items-center rounded-full text-muted hover:bg-bad/10 hover:text-bad">
           <I.trash size={15} />
         </button>
       </div>

@@ -81,19 +81,19 @@ export function Settings() {
           <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-accent/20 to-transparent" />
           <div className="relative mx-auto grid size-20 place-items-center rounded-full border-4 border-card bg-inverse font-display text-3xl text-on-inverse shadow-lg">{s.brandName.charAt(0)}</div>
           <p className="relative mt-4 font-display text-2xl">{s.brandName}</p>
-          <p className="relative mt-1 text-sm text-muted">{s.tagline}</p>
+          <p className="relative mt-1 text-[14px] text-muted">{s.tagline}</p>
           <div className="mt-5 grid grid-cols-3 divide-x divide-line rounded-2xl bg-soft py-3 text-center">
             <div>
               <p className="font-bold">{db.products.length}</p>
-              <p className="text-[10px] text-muted uppercase">Products</p>
+              <p className="text-2xs text-muted uppercase">Products</p>
             </div>
             <div>
               <p className="font-bold">{db.orders.length}</p>
-              <p className="text-[10px] text-muted uppercase">Orders</p>
+              <p className="text-2xs text-muted uppercase">Orders</p>
             </div>
             <div>
               <p className="font-bold">{db.movements.length}</p>
-              <p className="text-[10px] text-muted uppercase">Moves</p>
+              <p className="text-2xs text-muted uppercase">Moves</p>
             </div>
           </div>
         </Card>
@@ -107,8 +107,8 @@ export function Settings() {
                   <button key={it.k} onClick={() => show(it.k)} className="flex w-full items-center gap-3.5 border-b border-line px-5 py-4 text-left last:border-0 hover:bg-soft/60">
                     <span className="text-ink-2">{it.icon}</span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold">{it.label}</span>
-                      <span className="block truncate text-xs text-muted first-letter:uppercase">{it.sub}</span>
+                      <span className="block text-[14px] font-semibold">{it.label}</span>
+                      <span className="block truncate text-[13px] text-muted first-letter:uppercase">{it.sub}</span>
                     </span>
                     <span className="grid size-7 place-items-center rounded-full bg-soft">
                       <I.arrowR size={14} />
@@ -175,7 +175,7 @@ export function Settings() {
               <Input type="number" min={0} step="0.1" value={draft.taxRate} onChange={(e) => d("taxRate", Number(e.target.value))} />
             </Field>
             <ToggleRow label="Prices include tax" sub="VAT-style pricing: tax is shown but not added at checkout" checked={draft.taxInclusive} onChange={(v) => d("taxInclusive", v)} />
-            <p className="rounded-2xl bg-soft p-3 text-xs text-muted">Preview: {money(185.29, draft)}</p>
+            <p className="rounded-2xl bg-soft p-3 text-[13px] text-muted">Preview: {money(185.29, draft)}</p>
           </div>
         )}
         {open === "delivery" && (
@@ -193,7 +193,7 @@ export function Settings() {
             {(Object.keys(PAYMENT_LABEL) as PaymentMethod[]).map((m) => (
               <ToggleRow key={m} label={PAYMENT_LABEL[m]} sub={m === "in_store" ? "Studio point-of-sale only" : "Offered at online checkout"} checked={draft.payments[m]} onChange={(v) => d("payments", { ...draft.payments, [m]: v })} />
             ))}
-            <p className="mt-3 rounded-2xl bg-soft p-3 text-xs text-muted">Online card payments need a payment provider (e.g. Stripe) connected to a backend — see the README for next steps.</p>
+            <p className="mt-3 rounded-2xl bg-soft p-3 text-[13px] text-muted">Online card payments need a payment provider (e.g. Stripe) connected to a backend — see the README for next steps.</p>
           </div>
         )}
         {open === "inventory" && (
@@ -233,7 +233,7 @@ export function Settings() {
             <Field label="Next number">
               <Input type="number" min={1} value={draft.nextOrderNo} onChange={(e) => d("nextOrderNo", Number(e.target.value))} />
             </Field>
-            <p className="col-span-2 text-xs text-muted">
+            <p className="col-span-2 text-[13px] text-muted">
               Next order will be <b>{`${draft.orderPrefix}${draft.nextOrderNo}`}</b>
             </p>
           </div>
@@ -242,10 +242,10 @@ export function Settings() {
         {open === "appearance" && (
           <div className="space-y-5">
             <div>
-              <p className="mb-2 text-xs font-semibold">Theme</p>
+              <p className="mb-2 text-[13px] font-semibold">Theme</p>
               <div className="grid grid-cols-3 gap-2">
                 {(["light", "dark", "system"] as const).map((t) => (
-                  <button key={t} onClick={() => d("theme", t)} className={cx("flex flex-col items-center gap-2 rounded-2xl border p-3 text-xs font-semibold capitalize", draft.theme === t ? "border-inverse" : "border-line")}>
+                  <button key={t} onClick={() => d("theme", t)} className={cx("flex flex-col items-center gap-2 rounded-2xl border p-3 text-[13px] font-semibold capitalize", draft.theme === t ? "border-inverse" : "border-line")}>
                     {t === "light" ? <I.sun size={20} /> : t === "dark" ? <I.moon size={20} /> : <I.settings size={20} />}
                     {t}
                   </button>
@@ -253,7 +253,7 @@ export function Settings() {
               </div>
             </div>
             <div>
-              <p className="mb-2 text-xs font-semibold">Accent</p>
+              <p className="mb-2 text-[13px] font-semibold">Accent</p>
               <div className="flex flex-wrap items-center gap-2">
                 {ACCENTS.map((c) => (
                   <button key={c} aria-label={c} onClick={() => d("accent", c)} className={cx("size-9 rounded-full border-2", draft.accent === c ? "border-ink" : "border-transparent")} style={{ background: c }} />
@@ -271,7 +271,7 @@ export function Settings() {
                 <Input inputMode="numeric" maxLength={6} value={draft.adminPin} onChange={(e) => d("adminPin", e.target.value.replace(/\D/g, ""))} className="text-center font-mono text-xl tracking-[.5em]" />
               </Field>
             )}
-            <p className="rounded-2xl bg-soft p-3 text-xs text-muted">The PIN stops casual access on a shared shop device. It is not a substitute for real accounts — for multi-staff use, connect the app to a backend with sign-in.</p>
+            <p className="rounded-2xl bg-soft p-3 text-[13px] text-muted">The PIN stops casual access on a shared shop device. It is not a substitute for real accounts — for multi-staff use, connect the app to a backend with sign-in.</p>
           </div>
         )}
       </Modal>
@@ -285,8 +285,8 @@ function ToggleRow({ label, sub, checked, onChange }: { label: string; sub?: str
   return (
     <div className="flex items-center gap-4 border-b border-line py-3 last:border-0">
       <div className="flex-1">
-        <p className="text-sm font-semibold">{label}</p>
-        {sub && <p className="text-xs text-muted">{sub}</p>}
+        <p className="text-[14px] font-semibold">{label}</p>
+        {sub && <p className="text-[13px] text-muted">{sub}</p>}
       </div>
       <Toggle label={label} checked={checked} onChange={onChange} />
     </div>
@@ -294,13 +294,13 @@ function ToggleRow({ label, sub, checked, onChange }: { label: string; sub?: str
 }
 
 function ApplyReorder({ value }: { value: number }) {
-  const { db, saveProduct, toast } = useStore();
+  const { setReorderPointAll, toast } = useStore();
   return (
     <button
-      className="text-xs font-semibold text-accent hover:underline"
+      className="text-[13px] font-semibold text-accent hover:underline"
       onClick={async () => {
-        if (!await ask(`Set the reorder point of every size to ${value}?`)) return;
-        for (const p of db.products) saveProduct({ ...p, variants: p.variants.map((v) => ({ ...v, reorderPoint: value })) });
+        if (!(await ask(`Set the reorder point of every size to ${value}?`))) return;
+        setReorderPointAll(value);
         toast("Reorder points updated", "success");
       }}
     >
@@ -316,8 +316,8 @@ function Promos({ draft, set }: { draft: S; set: (v: S["promoCodes"]) => void })
     <div>
       {draft.promoCodes.map((p, i) => (
         <div key={p.code} className="flex items-center gap-3 border-b border-line py-3">
-          <span className="rounded-lg bg-soft px-2 py-1 font-mono text-xs font-bold">{p.code}</span>
-          <span className="flex-1 text-sm">{p.percent}% off</span>
+          <span className="rounded-lg bg-soft px-2 py-1 font-mono text-[13px] font-bold">{p.code}</span>
+          <span className="flex-1 text-[14px]">{p.percent}% off</span>
           <Toggle label={`Activate ${p.code}`} checked={p.active} onChange={(v) => set(draft.promoCodes.map((x, j) => (j === i ? { ...x, active: v } : x)))} />
           <button aria-label="Delete code" onClick={() => set(draft.promoCodes.filter((_, j) => j !== i))} className="text-muted hover:text-bad">
             <I.trash size={16} />
@@ -370,7 +370,7 @@ function DataModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           title="Download full backup"
           sub="Products, stock, orders and settings as JSON"
           onClick={() => {
-            downloadFile(`maison-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(db, null, 2), "application/json");
+            downloadFile(`loris-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(db, null, 2), "application/json");
             toast("Backup downloaded and copied to clipboard", "success");
           }}
         />
@@ -415,8 +415,8 @@ function Action({ icon, title, sub, onClick, danger }: { icon: ReactNode; title:
     <button onClick={onClick} className={cx("mb-2 flex w-full items-center gap-3 rounded-2xl border p-4 text-left transition", danger ? "border-bad/20 hover:bg-bad/5" : "border-line hover:bg-soft")}>
       <span className={danger ? "text-bad" : ""}>{icon}</span>
       <span className="flex-1">
-        <span className={cx("block text-sm font-semibold", danger && "text-bad")}>{title}</span>
-        <span className="block text-xs text-muted">{sub}</span>
+        <span className={cx("block text-[14px] font-semibold", danger && "text-bad")}>{title}</span>
+        <span className="block text-[13px] text-muted">{sub}</span>
       </span>
       <I.chevR size={16} className="text-muted" />
     </button>

@@ -53,14 +53,14 @@ export function Catalogue({ query }: { query: URLSearchParams }) {
     <div className="px-4 pt-3 md:px-6 md:pt-8">
       <div className="mb-4 flex items-center justify-between md:hidden">
         <h1 className="font-display text-[32px]">Catalogue</h1>
-        <span className="text-xs font-semibold text-muted">{list.length} scents</span>
+        <span className="text-[13px] font-semibold text-muted">{list.length} {list.length === 1 ? "scent" : "scents"}</span>
       </div>
       <div className="mb-1 hidden items-end justify-between md:flex">
         <div>
           <p className="eyebrow">The catalogue</p>
           <h1 className="font-display text-5xl">All fragrances</h1>
         </div>
-        <span className="text-sm text-muted">{list.length} scents</span>
+        <span className="text-[14px] text-muted">{list.length} {list.length === 1 ? "scent" : "scents"}</span>
       </div>
 
       <div className="sticky top-0 z-20 -mx-4 bg-paper/90 px-4 pt-2 pb-3 backdrop-blur-xl md:top-16 md:mx-0 md:px-0 md:pt-5">
@@ -72,16 +72,16 @@ export function Catalogue({ query }: { query: URLSearchParams }) {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search scents, notes, moods…"
-              className="h-12 w-full rounded-full border border-line bg-card pr-4 pl-11 text-sm outline-none focus:border-ink/50"
+              className="h-12 w-full rounded-full border border-line-2 bg-card pr-4 pl-11 text-[14px] outline-none focus:border-ink/50"
             />
           </div>
           <button
             onClick={() => setFiltersOpen(true)}
-            className="relative flex h-12 items-center gap-2 rounded-full bg-inverse px-4 text-sm font-semibold text-on-inverse"
+            className="relative flex h-12 items-center gap-2 rounded-full bg-inverse px-4 text-[14px] font-semibold text-on-inverse"
             aria-label="Filters and sorting"
           >
             <I.filter size={18} /> <span className="hidden sm:inline">Filter</span>
-            {activeFilters > 0 && <span className="grid size-5 place-items-center rounded-full bg-accent text-[10px]">{activeFilters}</span>}
+            {activeFilters > 0 && <span className="grid size-5 place-items-center rounded-full bg-accent text-2xs">{activeFilters}</span>}
           </button>
         </div>
         <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
@@ -176,7 +176,7 @@ export function Catalogue({ query }: { query: URLSearchParams }) {
             </Chip>
           ))}
         </FilterGroup>
-        <button className={cx("mt-2 text-xs text-muted underline")} onClick={() => navigate("/shop")}>
+        <button className={cx("mt-2 text-[13px] text-muted underline")} onClick={() => navigate("/shop")}>
           Clear URL filters
         </button>
       </Modal>

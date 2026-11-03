@@ -34,8 +34,9 @@ export function ProductPage({ id }: { id: string }) {
   const add = () => {
     if (!v) return;
     if (!s.storeOpen) return toast("Online ordering is currently paused.", "error");
-    addToCart(p.id, v.id, qty);
-    toast(`${p.name} · ${v.sizeMl}ml added to bag`, "success");
+    const added = addToCart(p.id, v.id, qty);
+    if (added === 0) return toast("No more stock available in this size.", "error");
+    toast(added < qty ? `Only ${added} more could be added — that's all in stock` : `${p.name} · ${v.sizeMl}ml added to bag`, "success");
     setQty(1);
   };
 
@@ -51,13 +52,13 @@ export function ProductPage({ id }: { id: string }) {
         }
       />
       <div className="md:grid md:grid-cols-2 md:gap-10 md:px-6 md:pt-2">
-        <div className="relative mx-4 overflow-hidden rounded-[28px] bg-gradient-to-b from-soft to-card md:sticky md:top-24 md:mx-0 md:self-start">
+        <div className="relative mx-4 overflow-hidden rounded-2xl bg-gradient-to-b from-soft to-card md:sticky md:top-24 md:mx-0 md:self-start">
           <div className="pointer-events-none absolute inset-0 opacity-60" style={{ background: `radial-gradient(circle at 50% 60%, ${p.bottle.liquid}55, transparent 60%)` }} />
           <div className="relative flex aspect-square items-center justify-center p-8 md:aspect-[4/5]">
             <Bottle product={p} brand={s.brandName} className="h-full max-h-[420px] w-auto drop-shadow-[0_30px_30px_rgba(0,0,0,.18)]" />
           </div>
           {family && (
-            <span className="absolute bottom-4 left-4 flex items-center gap-1.5 rounded-full bg-card/90 px-3 py-1 text-[11px] font-semibold">
+            <span className="absolute bottom-4 left-4 flex items-center gap-1.5 rounded-full bg-card/90 px-3 py-1 text-[12px] font-semibold">
               <span className="size-2.5 rounded-full" style={{ background: family.color }} /> {family.name}
             </span>
           )}
@@ -69,7 +70,7 @@ export function ProductPage({ id }: { id: string }) {
           <div className="mt-3 flex items-center justify-between">
             <p className="flex items-baseline gap-2">
               <span className="text-2xl font-bold">{v && money(v.price, s)}</span>
-              {v?.compareAt && <s className="text-sm text-muted">{money(v.compareAt, s)}</s>}
+              {v?.compareAt && <s className="text-[14px] text-muted">{money(v.compareAt, s)}</s>}
             </p>
             <Stepper value={qty} onChange={setQty} min={1} max={Math.max(1, available)} />
           </div>
@@ -92,27 +93,27 @@ export function ProductPage({ id }: { id: string }) {
                       out && "opacity-45",
                     )}
                   >
-                    <span className="text-sm font-bold">{x.sizeMl} ml</span>
-                    <span className={cx("text-[11px]", x.id === v?.id ? "text-on-inverse/70" : "text-muted")}>{out ? "Sold out" : money(x.price, s)}</span>
+                    <span className="text-[14px] font-bold">{x.sizeMl} ml</span>
+                    <span className={cx("text-[12px]", x.id === v?.id ? "text-on-inverse/70" : "text-muted")}>{out ? "Sold out" : money(x.price, s)}</span>
                   </button>
                 );
               })}
             </div>
-            {v && v.stock > 0 && v.stock <= v.reorderPoint && <p className="mt-2 text-xs font-semibold text-warn">Only {v.stock} left in this size</p>}
+            {v && v.stock > 0 && v.stock <= v.reorderPoint && <p className="mt-2 text-[13px] font-semibold text-warn">Only {v.stock} left in this size</p>}
           </div>
 
-          <div className="mt-7 flex gap-6 border-b border-line text-sm">
+          <div className="mt-7 flex gap-6 border-b border-line text-[14px]">
             {(["details", "notes", "delivery"] as const).map((t) => (
               <button key={t} onClick={() => setTab(t)} className={cx("-mb-px border-b-2 pb-2.5 font-semibold capitalize", tab === t ? "border-ink" : "border-transparent text-muted")}>
                 {t === "notes" ? "Olfactory notes" : t}
               </button>
             ))}
           </div>
-          <div className="min-h-36 pt-4 text-sm leading-relaxed text-ink-2">
+          <div className="min-h-36 pt-4 text-[14px] leading-relaxed text-ink-2">
             {tab === "details" && (
               <div className="fade">
                 <p>{p.description}</p>
-                <dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
+                <dl className="mt-4 grid grid-cols-2 gap-3 text-[13px]">
                   <Info k="Concentration" v={p.concentration} />
                   <Info k="For" v={p.gender} />
                   <Info k="Family" v={family?.name ?? "—"} />
@@ -124,9 +125,9 @@ export function ProductPage({ id }: { id: string }) {
               <div className="fade space-y-3">
                 {(["top", "heart", "base"] as const).map((k, i) => (
                   <div key={k} className="flex items-start gap-3 rounded-2xl bg-soft p-3.5">
-                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-card font-display text-sm">{i + 1}</span>
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-card font-display text-[14px]">{i + 1}</span>
                     <div>
-                      <p className="text-[11px] font-bold tracking-[.16em] uppercase">{k} notes</p>
+                      <p className="text-[12px] font-bold tracking-[.1em] uppercase">{k} notes</p>
                       <p className="mt-0.5 text-ink-2">{p.notes[k].join(" · ") || "—"}</p>
                     </div>
                   </div>

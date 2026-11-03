@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { Bottle } from "../components/Bottle";
 import { I } from "../components/icons";
 import { ask, Badge, Button, Card, Chip, Empty, Field, Input, Select, Textarea, Toggle, cx } from "../components/ui";
-import { minPrice, stockState, totalStock, useStore } from "../lib/store";
+import { minPrice, needsRestock, stockState, totalStock, useStore } from "../lib/store";
 import { money, splitList, uid } from "../lib/format";
 import { navigate } from "../lib/router";
 import type { BottleShape, Concentration, Gender, Product, ProductStatus, Variant } from "../lib/types";
@@ -47,10 +47,10 @@ export function Products() {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative min-w-52 flex-1">
           <I.search size={16} className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products, SKUs, tags" className="h-11 w-full rounded-full border border-line bg-card pr-4 pl-10 text-sm outline-none focus:border-ink/50" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products, SKUs, tags" className="h-12 w-full rounded-full border border-line-2 bg-card pr-4 pl-10 text-[14px] outline-none focus:border-ink/50" />
         </div>
         <div className="w-44">
-          <Select value={col} onChange={(e) => setCol(e.target.value)} className="h-11 rounded-full bg-card">
+          <Select value={col} onChange={(e) => setCol(e.target.value)} className="rounded-full">
             <option value="">All collections</option>
             {db.collections.map((c) => (
               <option key={c.id} value={c.id}>
@@ -76,15 +76,15 @@ export function Products() {
       </div>
 
       {sel.length > 0 && (
-        <div className="sheet sticky top-16 z-20 mb-3 flex flex-wrap items-center gap-2 rounded-full bg-inverse py-2 pr-2 pl-5 text-sm text-on-inverse lg:top-4">
+        <div className="sheet sticky top-16 z-20 mb-3 flex flex-wrap items-center gap-2 rounded-full bg-inverse py-2 pr-2 pl-5 text-[14px] text-on-inverse lg:top-4">
           <span className="mr-auto font-semibold">{sel.length} selected</span>
-          <button onClick={() => bulk("active")} className="h-8 rounded-full bg-on-inverse/10 px-3 text-xs font-semibold">
+          <button onClick={() => bulk("active")} className="h-8 rounded-full bg-on-inverse/10 px-3 text-[13px] font-semibold">
             Publish
           </button>
-          <button onClick={() => bulk("draft")} className="h-8 rounded-full bg-on-inverse/10 px-3 text-xs font-semibold">
+          <button onClick={() => bulk("draft")} className="h-8 rounded-full bg-on-inverse/10 px-3 text-[13px] font-semibold">
             Draft
           </button>
-          <button onClick={() => bulk("archived")} className="h-8 rounded-full bg-on-inverse/10 px-3 text-xs font-semibold">
+          <button onClick={() => bulk("archived")} className="h-8 rounded-full bg-on-inverse/10 px-3 text-[13px] font-semibold">
             Archive
           </button>
           <button aria-label="Clear selection" onClick={() => setSel([])} className="grid size-8 place-items-center rounded-full bg-on-inverse/10">
@@ -100,17 +100,17 @@ export function Products() {
       ) : view === "grid" ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {list.map((p) => (
-            <button key={p.id} onClick={() => navigate(`/studio/products/${p.id}`)} className="rounded-[22px] border border-line bg-card p-3 text-left transition hover:shadow-lg">
+            <button key={p.id} onClick={() => navigate(`/studio/products/${p.id}`)} className="rounded-2xl border border-line bg-card p-3 text-left transition hover:shadow-lg">
               <div className="flex aspect-square items-center justify-center rounded-2xl bg-soft p-3">
                 <Bottle product={p} brand={s.brandName} className="h-full w-auto" />
               </div>
               <div className="mt-2.5 flex items-center justify-between gap-2">
-                <p className="truncate text-sm font-semibold">{p.name}</p>
+                <p className="truncate text-[14px] font-semibold">{p.name}</p>
                 <Badge tone={STATUS_TONE[p.status]} className="capitalize">
                   {p.status}
                 </Badge>
               </div>
-              <p className="text-xs text-muted">
+              <p className="text-[13px] text-muted">
                 {money(minPrice(p), s)} · {totalStock(p)} in stock
               </p>
             </button>
@@ -135,18 +135,18 @@ export function Products() {
                     <Bottle product={p} label={false} className="h-10 w-auto" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">
+                    <p className="truncate text-[14px] font-semibold">
                       {p.name}
                       {p.featured && <I.sparkle size={12} className="ml-1 inline text-accent" />}
                     </p>
-                    <p className="truncate text-xs text-muted">
+                    <p className="truncate text-[13px] text-muted">
                       {db.collections.find((c) => c.id === p.collectionId)?.name ?? "No collection"} · {p.concentration} · {p.variants.map((v) => `${v.sizeMl}ml`).join(" / ")}
                     </p>
                   </div>
-                  <div className="hidden w-28 text-right text-sm font-semibold md:block">{money(minPrice(p), s)}</div>
+                  <div className="hidden w-28 text-right text-[14px] font-semibold md:block">{money(minPrice(p), s)}</div>
                   <div className="w-20 text-right">
-                    <p className={cx("text-sm font-bold tabular-nums", st === "out" ? "text-bad" : st === "low" ? "text-warn" : "")}>{totalStock(p)}</p>
-                    <p className="text-[10px] text-muted">in stock</p>
+                    <p className={cx("text-[14px] font-bold tabular-nums", st === "out" ? "text-bad" : needsRestock(p) ? "text-warn" : "")}>{totalStock(p)}</p>
+                    <p className="text-2xs text-muted">in stock</p>
                   </div>
                   <Badge tone={STATUS_TONE[p.status]} className="hidden w-20 justify-center capitalize sm:inline-flex">
                     {p.status}
@@ -194,6 +194,8 @@ export function ProductEditor({ id }: { id: string }) {
   const existing = db.products.find((p) => p.id === id);
   const isNew = id === "new";
   const [p, setP] = useState<Product>(() => (existing ? structuredClone(existing) : blank(s)));
+  // Stock as it was when the editor opened; only the difference typed by the user is applied on save.
+  const [opened] = useState(() => new Map(existing?.variants.map((v) => [v.id, v.stock]) ?? []));
   const [notes, setNotes] = useState(() => ({ top: p.notes.top.join(", "), heart: p.notes.heart.join(", "), base: p.notes.base.join(", "), tags: p.tags.join(", ") }));
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -226,7 +228,12 @@ export function ProductEditor({ id }: { id: string }) {
     const skus = variants.map((v) => v.sku);
     const clash = db.products.some((o) => o.id !== p.id && o.variants.some((v) => skus.includes(v.sku)));
     if (clash || new Set(skus).size !== skus.length) return toast("Each SKU must be unique.", "error");
-    if (variants.some((v) => v.price <= 0)) return toast("Every size needs a price.", "error");
+    if (variants.some((v) => !(v.price > 0))) return toast("Every size needs a price.", "error");
+    if (variants.some((v) => !(v.sizeMl > 0))) return toast("Every size needs a volume in ml.", "error");
+    if (new Set(variants.map((v) => v.sizeMl)).size !== variants.length) return toast("Two sizes have the same volume.", "error");
+    if (variants.some((v) => v.cost < 0 || v.reorderPoint < 0 || (v.compareAt !== undefined && v.compareAt <= v.price)))
+      return toast("Check the numbers: costs can't be negative and the compare-at price must be higher than the price.", "error");
+    if (!existing && variants.some((v) => v.stock < 0)) return toast("Opening stock can't be negative.", "error");
     const final: Product = {
       ...p,
       status: status ?? p.status,
@@ -234,7 +241,9 @@ export function ProductEditor({ id }: { id: string }) {
       notes: { top: splitList(notes.top), heart: splitList(notes.heart), base: splitList(notes.base) },
       tags: splitList(notes.tags),
     };
-    saveProduct(final);
+    const delta: Record<string, number> = {};
+    for (const v of final.variants) if (opened.has(v.id)) delta[v.id] = v.stock - opened.get(v.id)!;
+    saveProduct(final, delta);
     toast(isNew ? "Product created" : "Changes saved", "success");
     navigate(`/studio/products`);
   };
@@ -262,23 +271,25 @@ export function ProductEditor({ id }: { id: string }) {
 
   return (
     <div className="rise">
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <button aria-label="Back" onClick={() => navigate("/studio/products")} className="grid size-10 place-items-center rounded-full border border-line bg-card">
-          <I.arrowL size={18} />
-        </button>
-        <div className="min-w-0 flex-1">
-          <p className="eyebrow">{isNew ? "New product" : "Edit product"}</p>
-          <h1 className="truncate font-display text-3xl">{p.name || "Untitled fragrance"}</h1>
+      <div className="mb-8 flex flex-col gap-4 border-b border-line pb-6 md:flex-row md:items-end">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <button aria-label="Back" onClick={() => navigate("/studio/products")} className="grid size-11 shrink-0 place-items-center rounded-full border-[1.5px] border-line-2 bg-card hover:border-ink">
+            <I.arrowL size={18} />
+          </button>
+          <div className="min-w-0">
+            <p className="eyebrow">{isNew ? "New product" : "Edit product"}</p>
+            <h1 className="font-display text-[32px] break-words md:text-[40px]">{p.name || "Untitled fragrance"}</h1>
+          </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {!isNew && (
             <>
               <Button
                 variant="ghost"
                 onClick={() => {
-                  duplicateProduct(p.id);
-                  toast("Duplicated as draft", "success");
-                  navigate("/studio/products");
+                  const id = duplicateProduct(p.id);
+                  toast("Duplicated as a draft", "success");
+                  navigate(id ? `/studio/products/${id}` : "/studio/products");
                 }}
               >
                 <I.copy size={16} /> <span className="hidden sm:inline">Duplicate</span>
@@ -389,21 +400,35 @@ export function ProductEditor({ id }: { id: string }) {
                       <Input type="number" min={0} step="0.01" value={v.cost || ""} onChange={(e) => setV(v.id, { cost: Number(e.target.value) })} />
                     </Field>
                     <Field label="SKU">
-                      <Input value={v.sku} placeholder={autoSku(v.sizeMl)} onChange={(e) => setV(v.id, { sku: e.target.value.toUpperCase() })} className="font-mono text-xs" />
+                      <Input value={v.sku} placeholder={autoSku(v.sizeMl)} onChange={(e) => setV(v.id, { sku: e.target.value.toUpperCase() })} className="font-mono text-[13px]" />
                     </Field>
                     <Field label="Barcode">
-                      <Input value={v.barcode ?? ""} onChange={(e) => setV(v.id, { barcode: e.target.value })} className="font-mono text-xs" />
+                      <Input value={v.barcode ?? ""} onChange={(e) => setV(v.id, { barcode: e.target.value })} className="font-mono text-[13px]" />
                     </Field>
-                    <Field label="On hand" hint={existing ? "Changes are logged as adjustments" : "Logged as initial stock"}>
+                    <Field
+                      label="On hand"
+                      hint={(() => {
+                        const live = db.products.find((x) => x.id === p.id)?.variants.find((y) => y.id === v.id)?.stock;
+                        if (live !== undefined && opened.has(v.id) && live !== opened.get(v.id)) return `Now ${live} live (sales since you opened). Your change is added to that.`;
+                        return existing && opened.has(v.id) ? "Changes are logged as adjustments" : "Logged as opening stock";
+                      })()}
+                    >
                       <Input type="number" value={v.stock} onChange={(e) => setV(v.id, { stock: Math.floor(Number(e.target.value)) })} />
                     </Field>
                     <Field label="Reorder at">
                       <Input type="number" min={0} value={v.reorderPoint} onChange={(e) => setV(v.id, { reorderPoint: Number(e.target.value) })} />
                     </Field>
                   </div>
-                  <div className="mt-2 flex items-center justify-between text-xs text-muted">
+                  <div className="mt-2 flex items-center justify-between text-[13px] text-muted">
                     <span>{v.price > 0 && v.cost > 0 ? `Margin ${Math.round(((v.price - v.cost) / v.price) * 100)}%` : "Set price & cost to see margin"}</span>
-                    <button onClick={() => setP((x) => ({ ...x, variants: x.variants.filter((y) => y.id !== v.id) }))} className="font-semibold text-bad hover:underline">
+                    <button
+                      onClick={async () => {
+                        const live = existing?.variants.find((y) => y.id === v.id)?.stock ?? 0;
+                        if (live > 0 && !(await ask(`This size still has ${live} in stock. Removing it writes that stock off. Continue?`))) return;
+                        setP((x) => ({ ...x, variants: x.variants.filter((y) => y.id !== v.id) }));
+                      }}
+                      className="font-semibold text-bad hover:underline"
+                    >
                       Remove size
                     </button>
                   </div>
@@ -437,7 +462,7 @@ export function ProductEditor({ id }: { id: string }) {
             <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-soft to-card p-6">
               <Bottle product={p} brand={s.brandName} className="h-full w-auto" />
               {p.image && (
-                <button onClick={() => set("image", undefined)} className="absolute top-2 right-2 rounded-full bg-card px-3 py-1 text-xs font-semibold shadow">
+                <button onClick={() => set("image", undefined)} className="absolute top-2 right-2 rounded-full bg-card px-3 py-1 text-[13px] font-semibold shadow">
                   Remove photo
                 </button>
               )}
@@ -449,12 +474,12 @@ export function ProductEditor({ id }: { id: string }) {
             {!p.image && (
               <div className="mt-4 space-y-3">
                 <div>
-                  <p className="mb-1.5 text-xs font-semibold">Flacon</p>
+                  <p className="mb-1.5 text-[13px] font-semibold">Flacon</p>
                   <div className="grid grid-cols-4 gap-1.5">
                     {SHAPES.map((sh) => (
                       <button key={sh} onClick={() => set("bottle", { ...p.bottle, shape: sh })} className={cx("rounded-xl border p-1.5 capitalize", p.bottle.shape === sh ? "border-inverse" : "border-line")}>
                         <Bottle product={{ ...p, bottle: { ...p.bottle, shape: sh } }} label={false} className="mx-auto h-10 w-auto" />
-                        <span className="text-[10px]">{sh}</span>
+                        <span className="text-2xs">{sh}</span>
                       </button>
                     ))}
                   </div>
@@ -468,7 +493,7 @@ export function ProductEditor({ id }: { id: string }) {
             <p className="eyebrow mb-3">Visibility</p>
             <div className="mb-4 grid grid-cols-3 gap-1 rounded-full bg-soft p-1">
               {(["active", "draft", "archived"] as const).map((st) => (
-                <button key={st} onClick={() => set("status", st)} className={cx("h-8 rounded-full text-xs font-bold capitalize", p.status === st ? "bg-card shadow-sm" : "text-muted")}>
+                <button key={st} onClick={() => set("status", st)} className={cx("h-8 rounded-full text-[13px] font-bold capitalize", p.status === st ? "bg-card shadow-sm" : "text-muted")}>
                   {st}
                 </button>
               ))}
@@ -480,7 +505,7 @@ export function ProductEditor({ id }: { id: string }) {
                 ["isNew", "Mark as new"],
               ] as const
             ).map(([k, label]) => (
-              <div key={k} className="flex items-center justify-between py-2 text-sm">
+              <div key={k} className="flex items-center justify-between py-2 text-[14px]">
                 <span>{label}</span>
                 <Toggle label={label} checked={p[k]} onChange={(v) => set(k, v)} />
               </div>
@@ -495,7 +520,7 @@ export function ProductEditor({ id }: { id: string }) {
 function Swatches({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (c: string) => void }) {
   return (
     <div>
-      <p className="mb-1.5 text-xs font-semibold">{label}</p>
+      <p className="mb-1.5 text-[13px] font-semibold">{label}</p>
       <div className="flex flex-wrap items-center gap-1.5">
         {options.map((c) => (
           <button key={c} aria-label={c} onClick={() => onChange(c)} className={cx("size-7 rounded-full border-2", value.toLowerCase() === c.toLowerCase() ? "border-inverse" : "border-transparent")} style={{ background: c }} />

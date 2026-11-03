@@ -84,10 +84,10 @@ export function Inventory({ query }: { query: URLSearchParams }) {
               setFilter(k);
               setTab("stock");
             }}
-            className={cx("rounded-[22px] border p-4 text-left transition", filter === k && tab === "stock" ? "border-inverse bg-card shadow-sm" : "border-line bg-card/60 hover:bg-card")}
+            className={cx("rounded-2xl border p-4 text-left transition", filter === k && tab === "stock" ? "border-inverse bg-card shadow-sm" : "border-line bg-card/60 hover:bg-card")}
           >
             <p className={cx("text-2xl font-bold", c)}>{n}</p>
-            <p className="text-xs text-muted">{label}</p>
+            <p className="text-[13px] text-muted">{label}</p>
           </button>
         ))}
       </div>
@@ -95,7 +95,7 @@ export function Inventory({ query }: { query: URLSearchParams }) {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="flex gap-1 rounded-full bg-card p-1 shadow-sm">
           {(["stock", "moves"] as const).map((t) => (
-            <button key={t} onClick={() => setTab(t)} className={cx("h-9 rounded-full px-4 text-xs font-bold", tab === t ? "bg-inverse text-on-inverse" : "text-muted")}>
+            <button key={t} onClick={() => setTab(t)} className={cx("h-9 rounded-full px-4 text-[13px] font-bold", tab === t ? "bg-inverse text-on-inverse" : "text-muted")}>
               {t === "stock" ? "Stock levels" : "Movement log"}
             </button>
           ))}
@@ -104,10 +104,10 @@ export function Inventory({ query }: { query: URLSearchParams }) {
           <>
             <div className="relative min-w-48 flex-1">
               <I.search size={16} className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted" />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, SKU or barcode" className="h-11 w-full rounded-full border border-line bg-card pr-4 pl-10 text-sm outline-none focus:border-ink/50" />
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, SKU or barcode" className="h-12 w-full rounded-full border border-line-2 bg-card pr-4 pl-10 text-[14px] outline-none focus:border-ink/50" />
             </div>
             <div className="w-44">
-              <Select value={fam} onChange={(e) => setFam(e.target.value)} className="h-11 rounded-full bg-card">
+              <Select value={fam} onChange={(e) => setFam(e.target.value)} className="rounded-full">
                 <option value="">All families</option>
                 {db.families.map((f) => (
                   <option key={f.id} value={f.id}>
@@ -127,9 +127,9 @@ export function Inventory({ query }: { query: URLSearchParams }) {
           ) : (
             <>
               {/* desktop table */}
-              <table className="hidden w-full text-sm md:table">
+              <table className="hidden w-full text-[14px] md:table">
                 <thead>
-                  <tr className="border-b border-line text-left text-[11px] tracking-wider text-muted uppercase">
+                  <tr className="border-b border-line text-left text-[12px] tracking-wider text-muted uppercase">
                     <th className="py-3 pl-5 font-semibold">Product</th>
                     <th className="font-semibold">SKU</th>
                     <th className="text-right font-semibold">Value</th>
@@ -152,15 +152,15 @@ export function Inventory({ query }: { query: URLSearchParams }) {
                       <Bottle product={p} label={false} className="h-10 w-auto" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">
+                      <p className="truncate text-[14px] font-semibold">
                         {p.name} <span className="font-normal text-muted">· {v.sizeMl}ml</span>
                       </p>
-                      <p className="text-[11px] text-muted">{v.sku}</p>
+                      <p className="text-[12px] text-muted">{v.sku}</p>
                       <Level v={v} className="mt-1.5" />
                     </div>
                     <div className="text-right">
                       <p className={cx("text-lg font-bold tabular-nums", isOut(v) ? "text-bad" : isLow(v) ? "text-warn" : "")}>{v.stock}</p>
-                      <p className="text-[10px] text-muted">units</p>
+                      <p className="text-2xs text-muted">units</p>
                     </div>
                   </button>
                 ))}
@@ -174,7 +174,7 @@ export function Inventory({ query }: { query: URLSearchParams }) {
 
       <AdjustModal key={adjust?.v.id ?? "none"} row={adjust} onClose={() => setAdjust(null)} />
       <ReceiveModal open={receive} onClose={() => setReceive(false)} />
-      <p className="mt-4 text-center text-xs text-muted">
+      <p className="mt-4 text-center text-[13px] text-muted">
         Stock value at cost: <b>{money(all.reduce((a, v) => a + Math.max(0, v.stock) * v.cost, 0), s)}</b>
       </p>
     </div>
@@ -192,7 +192,11 @@ function Level({ v, className }: { v: Variant; className?: string }) {
 }
 
 function StockRow({ r, onAdjust }: { r: Row; onAdjust: () => void }) {
-  const { db, adjustStock } = useStore();
+  const { db, adjustStock, toast } = useStore();
+  const quick = (n: number) => {
+    const r = adjustStock(v.id, n, "adjust", "Quick adjust");
+    if (!r.ok) toast(r.error, "error");
+  };
   const { p, v } = r;
   return (
     <tr className="border-b border-line last:border-0 hover:bg-soft/60">
@@ -203,13 +207,13 @@ function StockRow({ r, onAdjust }: { r: Row; onAdjust: () => void }) {
           </div>
           <div>
             <p className="font-semibold">{p.name}</p>
-            <p className="text-xs text-muted">
+            <p className="text-[13px] text-muted">
               {v.sizeMl} ml · {p.concentration}
             </p>
           </div>
         </button>
       </td>
-      <td className="font-mono text-xs text-muted">{v.sku}</td>
+      <td className="font-mono text-[13px] text-muted">{v.sku}</td>
       <td className="text-right tabular-nums">{money(Math.max(0, v.stock) * v.cost, db.settings)}</td>
       <td className="text-right text-muted tabular-nums">{v.reorderPoint}</td>
       <td className="pl-6">
@@ -221,13 +225,13 @@ function StockRow({ r, onAdjust }: { r: Row; onAdjust: () => void }) {
       </td>
       <td className="pr-5">
         <div className="flex justify-end gap-1">
-          <button aria-label="Remove one" title="−1" onClick={() => adjustStock(v.id, -1, "adjust", "Quick adjust")} className="grid size-8 place-items-center rounded-full border border-line hover:border-ink/40">
+          <button aria-label="Remove one" title="−1" disabled={v.stock <= 0 && !db.settings.allowBackorder} onClick={() => quick(-1)} className="grid size-8 place-items-center rounded-full border border-line hover:border-ink/40">
             <I.minus size={14} />
           </button>
-          <button aria-label="Add one" title="+1" onClick={() => adjustStock(v.id, 1, "adjust", "Quick adjust")} className="grid size-8 place-items-center rounded-full border border-line hover:border-ink/40">
+          <button aria-label="Add one" title="+1" onClick={() => quick(1)} className="grid size-8 place-items-center rounded-full border border-line hover:border-ink/40">
             <I.plus size={14} />
           </button>
-          <button onClick={onAdjust} className="h-8 rounded-full bg-inverse px-3 text-xs font-semibold text-on-inverse">
+          <button onClick={onAdjust} className="h-8 rounded-full bg-inverse px-3 text-[13px] font-semibold text-on-inverse">
             Adjust
           </button>
         </div>
@@ -249,7 +253,8 @@ function AdjustModal({ row, onClose }: { row: Row | null; onClose: () => void })
   const submit = () => {
     if (delta === 0) return onClose();
     const t: MovementType = mode === "set" ? "adjust" : type;
-    adjustStock(live.id, delta, t, reason || (mode === "set" ? "Stock count" : MOVE_LABEL[t]));
+    const r = adjustStock(live.id, delta, t, reason || (mode === "set" ? "Stock count" : MOVE_LABEL[t]));
+    if (!r.ok) return toast(r.error, "error");
     toast(`${row.p.name} ${live.sizeMl}ml → ${live.stock + delta} units`, "success");
     setQty("1");
     setReason("");
@@ -277,7 +282,7 @@ function AdjustModal({ row, onClose }: { row: Row | null; onClose: () => void })
           <p className="font-semibold">
             {row.p.name} · {live.sizeMl}ml
           </p>
-          <p className="text-xs text-muted">
+          <p className="text-[13px] text-muted">
             {live.sku} · {live.stock} on hand
           </p>
         </div>
@@ -291,7 +296,7 @@ function AdjustModal({ row, onClose }: { row: Row | null; onClose: () => void })
               setType(m === "add" ? "receive" : "adjust");
               if (m === "set") setQty(String(live.stock));
             }}
-            className={cx("h-9 rounded-full text-xs font-bold capitalize", mode === m ? "bg-card shadow-sm" : "text-muted")}
+            className={cx("h-9 rounded-full text-[13px] font-bold capitalize", mode === m ? "bg-card shadow-sm" : "text-muted")}
           >
             {m === "set" ? "Set count" : m}
           </button>
@@ -316,7 +321,7 @@ function AdjustModal({ row, onClose }: { row: Row | null; onClose: () => void })
           <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. PO-1042, tester for boutique, cycle count" />
         </Field>
       </div>
-      {!db.settings.allowBackorder && live.stock + delta < 0 && <p className="mt-3 text-xs text-bad">This will make stock negative.</p>}
+      {!db.settings.allowBackorder && live.stock + delta < 0 && <p className="mt-3 text-[13px] text-bad">This will make stock negative.</p>}
     </Modal>
   );
 }
@@ -419,20 +424,20 @@ function Movements() {
           <div key={m.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-0">
             <span className={cx("grid size-9 shrink-0 place-items-center rounded-full", m.qty > 0 ? "bg-ok/10 text-ok" : "bg-bad/10 text-bad")}>{m.qty > 0 ? <I.plus size={15} /> : <I.minus size={15} />}</span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">
+              <p className="truncate text-[14px] font-semibold">
                 {f ? `${f.product.name} · ${f.variant.sizeMl}ml` : "Deleted product"}
               </p>
-              <p className="truncate text-xs text-muted">
+              <p className="truncate text-[13px] text-muted">
                 {MOVE_LABEL[m.type]} · {m.reason}
                 {m.ref && m.ref !== m.reason ? ` · ${m.ref}` : ""}
               </p>
             </div>
             <div className="text-right">
-              <p className={cx("text-sm font-bold tabular-nums", m.qty > 0 ? "text-ok" : "text-bad")}>
+              <p className={cx("text-[14px] font-bold tabular-nums", m.qty > 0 ? "text-ok" : "text-bad")}>
                 {m.qty > 0 ? "+" : ""}
                 {m.qty}
               </p>
-              <p className="text-[10px] text-muted">
+              <p className="text-2xs text-muted">
                 bal. {m.balance} · {dateTime(m.at, db.settings.locale)}
               </p>
             </div>

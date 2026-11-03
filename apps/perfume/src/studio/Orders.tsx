@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Bottle } from "../components/Bottle";
 import { I } from "../components/icons";
 import { ask, Badge, Button, Card, Chip, Empty, Field, Input, Select, Stepper, Textarea, cx } from "../components/ui";
-import { findVariant, quote, useStore } from "../lib/store";
+import { findVariant, quote, useStore, vatLabel } from "../lib/store";
 import { dateTime, downloadFile, money, relTime, toCSV } from "../lib/format";
 import { navigate } from "../lib/router";
 import type { Channel, Customer, OrderStatus, PaymentMethod, PaymentStatus } from "../lib/types";
@@ -76,10 +76,10 @@ export function Orders() {
       <div className="mb-3 flex flex-wrap gap-2">
         <div className="relative min-w-52 flex-1">
           <I.search size={16} className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search order #, customer, product" className="h-11 w-full rounded-full border border-line bg-card pr-4 pl-10 text-sm outline-none focus:border-ink/50" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search order #, customer, product" className="h-12 w-full rounded-full border border-line-2 bg-card pr-4 pl-10 text-[14px] outline-none focus:border-ink/50" />
         </div>
         <div className="w-40">
-          <Select value={channel} onChange={(e) => setChannel(e.target.value as Channel | "")} className="h-11 rounded-full bg-card">
+          <Select value={channel} onChange={(e) => setChannel(e.target.value as Channel | "")} className="rounded-full">
             <option value="">All channels</option>
             <option value="online">Online</option>
             <option value="in-store">In-store</option>
@@ -104,11 +104,11 @@ export function Orders() {
           <button key={o.id} onClick={() => navigate(`/studio/orders/${o.id}`)} className="flex w-full items-center gap-3 border-b border-line px-4 py-3.5 text-left last:border-0 hover:bg-soft/60 md:px-5">
             <div className="grid size-11 shrink-0 place-items-center rounded-full bg-soft font-display">{o.customer.name.charAt(0) || "?"}</div>
             <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-2 text-sm font-semibold">
+              <p className="flex items-center gap-2 text-[14px] font-semibold">
                 {o.number}
                 <span className="truncate font-normal text-muted">· {o.customer.name}</span>
               </p>
-              <p className="truncate text-xs text-muted">
+              <p className="truncate text-[13px] text-muted">
                 {o.items.reduce((a, i) => a + i.qty, 0)} items · {o.channel} · {relTime(o.createdAt)}
               </p>
             </div>
@@ -118,7 +118,7 @@ export function Orders() {
               </Badge>
             </div>
             <div className="w-24 text-right">
-              <p className="text-sm font-bold">{money(o.total, s)}</p>
+              <p className="text-[14px] font-bold">{money(o.total, s)}</p>
               <Badge tone={STATUS_TONE[o.status]} className="mt-0.5 capitalize">
                 {o.status}
               </Badge>
@@ -143,7 +143,7 @@ export function OrderDetail({ id }: { id: string }) {
     );
   const idx = FLOW.indexOf(o.status);
   const next = idx >= 0 && idx < FLOW.length - 1 ? FLOW[idx + 1] : null;
-  const returned = o.history.some((h) => h.text?.startsWith("Items returned"));
+  const returned = !!o.returned;
 
   return (
     <div className="rise">
@@ -155,7 +155,7 @@ export function OrderDetail({ id }: { id: string }) {
           <p className="eyebrow">
             {o.channel} order · {dateTime(o.createdAt, s.locale)}
           </p>
-          <h1 className="flex items-center gap-3 font-display text-3xl">
+          <h1 className="flex flex-wrap items-center gap-3 text-[28px] font-semibold tracking-tight md:text-[32px]">
             {o.number}
             <Badge tone={STATUS_TONE[o.status]} className="font-sans capitalize">
               {o.status}
@@ -165,8 +165,8 @@ export function OrderDetail({ id }: { id: string }) {
         {next && o.status !== "cancelled" && (
           <Button
             onClick={() => {
-              setOrderStatus(o.id, next);
-              toast(`${o.number} → ${next}`, "success");
+              const r = setOrderStatus(o.id, next);
+              toast(r.ok ? `${o.number} marked ${next}` : r.error, r.ok ? "success" : "error");
             }}
           >
             {NEXT_LABEL[o.status]} <I.arrowR size={16} />
@@ -177,7 +177,7 @@ export function OrderDetail({ id }: { id: string }) {
       {/* Print header */}
       <div className="mb-6 hidden print:block">
         <p className="font-display text-3xl">{s.brandName}</p>
-        <p className="text-sm">
+        <p className="text-[14px]">
           Invoice {o.number} · {dateTime(o.createdAt, s.locale)}
         </p>
       </div>
@@ -192,7 +192,7 @@ export function OrderDetail({ id }: { id: string }) {
                     <button
                       onClick={() => i > idx && setOrderStatus(o.id, st)}
                       title={st}
-                      className={cx("grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold", i <= idx ? "bg-inverse text-on-inverse" : "bg-soft text-muted hover:bg-line")}
+                      className={cx("grid size-8 shrink-0 place-items-center rounded-full text-[13px] font-bold", i <= idx ? "bg-inverse text-on-inverse" : "bg-soft text-muted hover:bg-line")}
                     >
                       {i <= idx ? <I.check size={14} /> : i + 1}
                     </button>
@@ -200,7 +200,7 @@ export function OrderDetail({ id }: { id: string }) {
                   </div>
                 ))}
               </div>
-              <div className="mt-2 flex justify-between text-[10px] text-muted capitalize">
+              <div className="mt-2 flex justify-between text-2xs text-muted capitalize">
                 {FLOW.map((st) => (
                   <span key={st}>{st}</span>
                 ))}
@@ -215,20 +215,20 @@ export function OrderDetail({ id }: { id: string }) {
                 <div key={it.variantId} className="flex items-center gap-3 border-b border-line p-4">
                   <div className="grid size-14 shrink-0 place-items-center rounded-xl bg-soft">{f && <Bottle product={f.product} label={false} className="h-12 w-auto" />}</div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold">{it.name}</p>
-                    <p className="text-xs text-muted">
+                    <p className="text-[14px] font-semibold">{it.name}</p>
+                    <p className="text-[13px] text-muted">
                       {it.sizeMl} ml · {it.sku} · {money(it.price, s)} × {it.qty}
                     </p>
                   </div>
-                  <p className="text-sm font-bold">{money(it.price * it.qty, s)}</p>
+                  <p className="text-[14px] font-bold">{money(it.price * it.qty, s)}</p>
                 </div>
               );
             })}
-            <dl className="space-y-1.5 bg-soft/60 p-4 text-sm">
+            <dl className="space-y-1.5 bg-soft/60 p-4 text-[14px]">
               <Line k="Subtotal" v={money(o.subtotal, s)} />
               {o.discount > 0 && <Line k="Discount" v={`− ${money(o.discount, s)}`} />}
               <Line k="Delivery" v={o.shipping ? money(o.shipping, s) : "Complimentary"} />
-              <Line k={`Tax${s.taxInclusive ? " (incl.)" : ""}`} v={money(o.tax, s)} />
+              <Line k={vatLabel(o, s.taxRate)} v={money(o.tax, s)} />
               <div className="flex justify-between pt-1 text-base font-bold">
                 <dt>Total</dt>
                 <dd>{money(o.total, s)}</dd>
@@ -240,11 +240,11 @@ export function OrderDetail({ id }: { id: string }) {
             <p className="eyebrow mb-3">Timeline</p>
             <ol className="relative space-y-3 border-l border-line pl-5">
               {[...o.history].reverse().map((h, i) => (
-                <li key={i} className="text-sm">
+                <li key={i} className="text-[14px]">
                   <span className="absolute -left-[5px] mt-1.5 size-2.5 rounded-full bg-inverse" />
                   <p className="font-semibold capitalize">{h.status === "note" ? "Note" : h.status === "payment" ? "Payment" : h.status}</p>
                   {h.text && <p className="text-ink-2">{h.text}</p>}
-                  <p className="text-xs text-muted">{dateTime(h.at, s.locale)}</p>
+                  <p className="text-[13px] text-muted">{dateTime(h.at, s.locale)}</p>
                 </li>
               ))}
             </ol>
@@ -265,7 +265,7 @@ export function OrderDetail({ id }: { id: string }) {
         </div>
 
         <div className="space-y-4">
-          <Card className="p-5 text-sm">
+          <Card className="p-5 text-[14px]">
             <p className="eyebrow mb-3">Customer</p>
             <p className="font-semibold">{o.customer.name}</p>
             <p className="text-muted">{o.customer.email}</p>
@@ -277,12 +277,12 @@ export function OrderDetail({ id }: { id: string }) {
             </p>
             {o.note && <p className="mt-3 rounded-xl bg-soft p-3 text-ink-2 italic">“{o.note}”</p>}
           </Card>
-          <Card className="no-print p-5 text-sm">
+          <Card className="no-print p-5 text-[14px]">
             <p className="eyebrow mb-3">Payment</p>
             <p className="mb-3 font-semibold">{PAYMENT_LABEL[o.paymentMethod]}</p>
             <div className="grid grid-cols-3 gap-1 rounded-full bg-soft p-1">
               {(["unpaid", "paid", "refunded"] as PaymentStatus[]).map((ps) => (
-                <button key={ps} onClick={() => ps !== o.paymentStatus && setPaymentStatus(o.id, ps)} className={cx("h-8 rounded-full text-xs font-bold capitalize", o.paymentStatus === ps ? "bg-card shadow-sm" : "text-muted")}>
+                <button key={ps} onClick={() => ps !== o.paymentStatus && setPaymentStatus(o.id, ps)} className={cx("h-8 rounded-full text-[13px] font-bold capitalize", o.paymentStatus === ps ? "bg-card shadow-sm" : "text-muted")}>
                   {ps}
                 </button>
               ))}
@@ -296,8 +296,8 @@ export function OrderDetail({ id }: { id: string }) {
                 className="w-full"
                 onClick={async () => {
                   if (await ask(`Cancel ${o.number}? Items go back into stock.`)) {
-                    setOrderStatus(o.id, "cancelled");
-                    toast("Order cancelled — stock restored");
+                    const r = setOrderStatus(o.id, "cancelled");
+                    toast(r.ok ? "Order cancelled and stock restored" : r.error, r.ok ? "success" : "error");
                   }
                 }}
               >
@@ -310,8 +310,8 @@ export function OrderDetail({ id }: { id: string }) {
                 className="w-full"
                 onClick={async () => {
                   if (await ask("Return all items to stock and mark refunded?")) {
-                    returnItems(o.id);
-                    toast("Return processed", "success");
+                    const r = returnItems(o.id);
+                    toast(r.ok ? "Return processed and stock restored" : r.error, r.ok ? "success" : "error");
                   }
                 }}
               >
@@ -349,7 +349,8 @@ export function NewOrder() {
   const [search, setSearch] = useState("");
   const [c, setC] = useState<Customer>({ name: "", email: "", phone: "", address: "", city: "", country: "" });
   const [channel, setChannel] = useState<Channel>("in-store");
-  const [method, setMethod] = useState<PaymentMethod>("in_store");
+  const enabled = (Object.keys(PAYMENT_LABEL) as PaymentMethod[]).filter((m) => s.payments[m]);
+  const [method, setMethod] = useState<PaymentMethod>(enabled.includes("in_store") ? "in_store" : (enabled[0] ?? "in_store"));
   const [paid, setPaid] = useState(true);
   const [fulfil, setFulfil] = useState<OrderStatus>("delivered");
   const [promo, setPromo] = useState("");
@@ -393,7 +394,7 @@ export function NewOrder() {
         </button>
         <div>
           <p className="eyebrow">Point of sale</p>
-          <h1 className="font-display text-3xl">New order</h1>
+          <h1 className="font-display text-[40px]">New sale</h1>
         </div>
       </div>
       <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
@@ -402,7 +403,7 @@ export function NewOrder() {
             <p className="eyebrow mb-3">Add products</p>
             <div className="relative">
               <I.search size={16} className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted" />
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search or scan SKU" className="h-11 w-full rounded-full border border-line bg-soft pr-4 pl-10 text-sm outline-none focus:border-ink/50" />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search or scan SKU" className="h-12 w-full rounded-full border border-line-2 bg-card pr-4 pl-10 text-[14px] outline-none focus:border-ink/50" />
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
               {options.map(({ p, v }) => {
@@ -412,11 +413,11 @@ export function NewOrder() {
                   <button key={v.id} disabled={out} onClick={() => add(v.id)} className={cx("flex items-center gap-2 rounded-2xl border p-2 text-left transition disabled:opacity-40", inOrder ? "border-inverse" : "border-line hover:border-ink/40")}>
                     <Bottle product={p} label={false} className="h-11 w-auto shrink-0" />
                     <div className="min-w-0">
-                      <p className="truncate text-xs font-semibold">{p.name}</p>
-                      <p className="text-[11px] text-muted">
+                      <p className="truncate text-[13px] font-semibold">{p.name}</p>
+                      <p className="text-[12px] text-muted">
                         {v.sizeMl}ml · {money(v.price, s)}
                       </p>
-                      <p className={cx("text-[10px]", v.stock <= v.reorderPoint ? "text-warn" : "text-muted")}>{v.stock} in stock</p>
+                      <p className={cx("text-2xs", v.stock <= v.reorderPoint ? "text-warn" : "text-muted")}>{v.stock} in stock</p>
                     </div>
                   </button>
                 );
@@ -447,17 +448,17 @@ export function NewOrder() {
           </Card>
         </div>
 
-        <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+        <div id="sale-summary" className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <Card className="p-5">
             <p className="eyebrow mb-3">Order</p>
-            {items.length === 0 && <p className="py-6 text-center text-sm text-muted">No items yet</p>}
+            {items.length === 0 && <p className="py-6 text-center text-[14px] text-muted">No items yet</p>}
             {items.map((it) => {
               const f = findVariant(db, it.variantId)!;
               return (
                 <div key={it.variantId} className="flex items-center gap-2 py-2">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{f.product.name}</p>
-                    <p className="text-xs text-muted">
+                    <p className="truncate text-[14px] font-semibold">{f.product.name}</p>
+                    <p className="text-[13px] text-muted">
                       {f.variant.sizeMl}ml · {money(f.variant.price, s)}
                     </p>
                   </div>
@@ -472,7 +473,8 @@ export function NewOrder() {
                   onChange={(e) => {
                     const ch = e.target.value as Channel;
                     setChannel(ch);
-                    setMethod(ch === "in-store" ? "in_store" : "card_on_delivery");
+                    const want: PaymentMethod = ch === "in-store" ? "in_store" : "cash_on_delivery";
+                    setMethod(enabled.includes(want) ? want : (enabled[0] ?? want));
                     setFulfil(ch === "in-store" ? "delivered" : "confirmed");
                   }}
                 >
@@ -505,19 +507,19 @@ export function NewOrder() {
                 <Input value={promo} onChange={(e) => setPromo(e.target.value)} placeholder="—" className="uppercase" />
               </Field>
             </div>
-            <label className="mt-3 flex items-center gap-2 text-sm">
+            <label className="mt-3 flex items-center gap-2 text-[14px]">
               <input type="checkbox" checked={paid} onChange={(e) => setPaid(e.target.checked)} className="size-4 accent-[var(--ink)]" /> Payment received
             </label>
             {channel !== "in-store" && (
-              <label className="mt-2 flex items-center gap-2 text-sm">
+              <label className="mt-2 flex items-center gap-2 text-[14px]">
                 <input type="checkbox" checked={freeShip} onChange={(e) => setFreeShip(e.target.checked)} className="size-4 accent-[var(--ink)]" /> Waive delivery fee
               </label>
             )}
-            <dl className="mt-4 space-y-1 border-t border-line pt-3 text-sm">
+            <dl className="mt-4 space-y-1 border-t border-line pt-3 text-[14px]">
               <Line k="Subtotal" v={money(q.subtotal, s)} />
               {q.discount > 0 && <Line k={`Promo ${q.promo?.code}`} v={`− ${money(q.discount, s)}`} />}
               <Line k="Delivery" v={money(q.shipping, s)} />
-              <Line k="Tax" v={money(q.tax, s)} />
+              <Line k={s.taxInclusive ? `incl. VAT ${s.taxRate}%` : `VAT ${s.taxRate}%`} v={money(q.tax, s)} />
               <div className="flex justify-between pt-1 text-lg font-bold">
                 <dt>Total</dt>
                 <dd>{money(q.total, s)}</dd>
@@ -529,6 +531,21 @@ export function NewOrder() {
           </Card>
         </div>
       </div>
+      {items.length > 0 && (
+        <div className="fixed inset-x-0 bottom-[calc(max(14px,env(safe-area-inset-bottom))+72px)] z-20 px-4 lg:hidden">
+          <button
+            onClick={() => document.getElementById("sale-summary")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            className="mx-auto flex h-14 w-full max-w-md items-center justify-between rounded-2xl border-[1.5px] border-inverse bg-card px-5 shadow-xl"
+          >
+            <span className="text-[14px] font-medium text-ink-2">
+              {q.units} item{q.units === 1 ? "" : "s"}
+            </span>
+            <span className="flex items-center gap-2 text-[16px] font-semibold">
+              {money(q.total, s)} <I.chevD size={16} />
+            </span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
